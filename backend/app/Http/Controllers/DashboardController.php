@@ -19,11 +19,12 @@ class DashboardController extends Controller
             ]);
         }
 
-        abort_unless($user->role === 'company_admin' && $user->company_id && $user->branch_id, 403);
+        abort_unless(in_array($user->role, ['company_admin', 'branch_admin'], true) && $user->company_id && $user->branch_id, 403);
 
         return view('companies.dashboard', [
-            'company' => $user->company()->with('branches')->firstOrFail(),
+            'company' => $user->company()->with($user->role === 'company_admin' ? ['branches', 'users'] : [])->firstOrFail(),
             'branch' => $user->branch,
+            'isCompanyAdmin' => $user->role === 'company_admin',
         ]);
     }
 }

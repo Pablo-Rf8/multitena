@@ -21,7 +21,7 @@
                 <tbody>
                     @foreach ($companies as $company)
                         <tr>
-                            <td><strong>{{ $company->name }}</strong></td>
+                            <td><strong>{{ $company->name }}</strong> @if ($company->is_demo) <span class="tag">DEMO</span> @endif</td>
                             <td>{{ $company->branches->firstWhere('is_central', true)?->name ?? '—' }}</td>
                             <td>{{ $company->users->firstWhere('role', 'company_admin')?->email ?? '—' }}</td>
                         </tr>

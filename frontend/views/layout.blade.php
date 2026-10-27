@@ -15,6 +15,7 @@
             @auth
                 <div class="account">
                     <span>{{ auth()->user()->name }}</span>
+                    <a href="{{ route('password.edit') }}">Cambiar contraseña</a>
                     <form method="post" action="{{ route('logout') }}">
                         @csrf
                         <button class="text-button" type="submit">Cerrar sesión</button>

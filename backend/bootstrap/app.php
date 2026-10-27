@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCompanyAdmin;
 use App\Http\Middleware\EnsureSuperAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['super_admin' => EnsureSuperAdmin::class]);
+        $middleware->alias([
+            'super_admin' => EnsureSuperAdmin::class,
+            'company_admin' => EnsureCompanyAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Laravel handles validation and authentication responses.
