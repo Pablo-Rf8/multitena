@@ -83,12 +83,12 @@ class TenantManagementTest extends TestCase
         $this->artisan('app:seed-demo')->assertSuccessful();
         $this->assertDatabaseCount('companies', 2);
         $this->assertDatabaseCount('branches', 5);
-        $this->assertDatabaseCount('users', 3);
+        $this->assertDatabaseCount('users', 4);
         $this->assertTrue(Company::where('slug', 'pepsi-demo')->firstOrFail()->is_demo);
 
         $this->artisan('app:seed-demo')->assertSuccessful();
         $this->assertDatabaseCount('companies', 2);
         $this->assertDatabaseCount('branches', 5);
-        $this->assertDatabaseCount('users', 3);
+        $this->assertDatabaseCount('users', 4);
     }
 }

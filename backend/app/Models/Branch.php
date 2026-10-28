@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
-    protected $fillable = ['company_id', 'name', 'is_central'];
+    protected $attributes = ['is_active' => true];
+
+    protected $fillable = ['company_id', 'name', 'is_central', 'is_active', 'address', 'phone'];
 
     protected function casts(): array
     {
-        return ['is_central' => 'boolean'];
+        return ['is_central' => 'boolean', 'is_active' => 'boolean'];
     }
 
     public function company(): BelongsTo

@@ -1,0 +1,27 @@
+name: multitena
+
+services:
+  app:
+    build: .
+    image: multitena:local
+    ports:
+      - "127.0.0.1:8001:8000"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "false"
+      APP_URL: http://127.0.0.1:8001
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/bd/database.sqlite
+      LOG_CHANNEL: stderr
+    volumes:
+      - app_data:/app/bd
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  app_data:

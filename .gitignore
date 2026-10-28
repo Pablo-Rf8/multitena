@@ -1,2 +1,3 @@
 /bd/*.sqlite
 /bd/*.sqlite-*
+/bd/backups/

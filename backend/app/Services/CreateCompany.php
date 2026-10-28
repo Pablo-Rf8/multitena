@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class CreateCompany
 {
-    public function handle(string $name, ?string $adminEmail, string $password, bool $isDemo = false): Company
+    public function handle(string $name, ?string $adminEmail, string $password, bool $isDemo = false, string $currency = 'GTQ'): Company
     {
         $name = trim($name);
         $slug = Str::slug($name);
@@ -28,8 +28,8 @@ class CreateCompany
             throw ValidationException::withMessages(['admin_email' => 'Ese correo ya pertenece a un usuario.']);
         }
 
-        return DB::transaction(function () use ($name, $slug, $email, $password, $isDemo) {
-            $company = Company::create(['name' => $name, 'slug' => $slug, 'is_demo' => $isDemo]);
+        return DB::transaction(function () use ($name, $slug, $email, $password, $isDemo, $currency) {
+            $company = Company::create(['name' => $name, 'slug' => $slug, 'is_demo' => $isDemo, 'currency' => $currency]);
             $branch = $company->branches()->create(['name' => 'Central', 'is_central' => true]);
             $company->users()->create([
                 'branch_id' => $branch->id,

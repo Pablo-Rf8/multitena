@@ -13,6 +13,16 @@
         <div class="header-inner">
             <a class="brand" href="{{ url('/') }}">Multitena</a>
             @auth
+                <nav class="main-nav" aria-label="Navegación principal">
+                    <a href="{{ route('dashboard') }}" @class(['current' => request()->routeIs('dashboard', 'companies.*', 'branches.*', 'branch-users.*', 'company-admins.*')])>Panel</a>
+                    @if (auth()->user()->role !== 'super_admin')
+                        <a href="{{ route('contacts.index') }}" @class(['current' => request()->routeIs('contacts.*')])>Contactos</a>
+                        <a href="{{ route('opportunities.index') }}" @class(['current' => request()->routeIs('opportunities.*')])>Oportunidades</a>
+                    @endif
+                    @if (auth()->user()->role === 'company_admin')
+                        <a href="{{ route('activity.index') }}" @class(['current' => request()->routeIs('activity.*')])>Actividad</a>
+                    @endif
+                </nav>
                 <div class="account">
                     <span>{{ auth()->user()->name }}</span>
                     <a href="{{ route('password.edit') }}">Cambiar contraseña</a>
@@ -28,6 +38,12 @@
         @if (session('status'))
             <div class="notice" role="status">{{ session('status') }}</div>
         @endif
+        @error('administrator')
+            <div class="notice notice-error" role="alert">{{ $message }}</div>
+        @enderror
+        @error('branch')
+            <div class="notice notice-error" role="alert">{{ $message }}</div>
+        @enderror
         @yield('content')
     </main>
 </body>

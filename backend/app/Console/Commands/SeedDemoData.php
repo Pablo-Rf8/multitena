@@ -29,7 +29,7 @@ class SeedDemoData extends Command
 
         foreach ($examples as [$name, $email, $extraBranches]) {
             if (Company::where('slug', Str::slug($name))->exists()) {
-                $this->line($name.' ya existe; no se modificó.');
+                $this->line($name.' ya existe; se conservarán sus datos.');
 
                 continue;
             }
@@ -60,6 +60,53 @@ class SeedDemoData extends Command
             }
         }
 
+        foreach (Company::where('is_demo', true)->whereIn('slug', ['pepsi-demo', 'coca-cola-demo'])->get() as $company) {
+            $this->seedCrm($company);
+        }
+
         return self::SUCCESS;
+    }
+
+    private function seedCrm(Company $company): void
+    {
+        if ($company->slug === 'pepsi-demo' && ! $company->users()->where('email', 'demo.crm@pepsi-demo.test')->exists()) {
+            $password = bin2hex(random_bytes(12));
+            $company->users()->create([
+                'name' => 'Administrador CRM (DEMO)',
+                'email' => 'demo.crm@pepsi-demo.test',
+                'password' => $password,
+                'role' => 'company_admin',
+                'branch_id' => $company->branches()->where('is_central', true)->firstOrFail()->id,
+            ]);
+            $this->line('  demo.crm@pepsi-demo.test | clave: '.$password);
+        }
+
+        $examples = $company->slug === 'pepsi-demo'
+            ? [
+                ['Central', 'María Torres', 'Distribuidora Atlas', 'maria@atlas.test', 'customer', 'Acuerdo de distribución', 2500000, 'won'],
+                ['Norte', 'Carlos Méndez', 'Mercados Norte', 'carlos@mercados-norte.test', 'qualified', 'Expansión regional', 8500000, 'proposal'],
+            ]
+            : [
+                ['Central', 'Lucía Herrera', 'Comercial Sol', 'lucia@comercial-sol.test', 'prospect', 'Primer pedido', 1750000, 'qualified'],
+                ['Oeste', 'Javier Ruiz', 'Tiendas Pacífico', 'javier@pacifico.test', 'customer', 'Renovación anual', 4200000, 'new'],
+            ];
+
+        foreach ($examples as [$branchName, $name, $organization, $email, $status, $title, $amount, $stage]) {
+            $branch = $company->branches()->where('name', $branchName)->first();
+            if (! $branch) {
+                continue;
+            }
+            $contact = $company->contacts()->firstOrCreate(
+                ['email' => $email],
+                ['branch_id' => $branch->id, 'name' => $name, 'organization' => $organization,
+                    'status' => $status, 'source' => 'Datos de demostración', 'is_demo' => true]
+            );
+            $contact->opportunities()->firstOrCreate(
+                ['title' => $title],
+                ['company_id' => $company->id, 'branch_id' => $branch->id,
+                    'amount_cents' => $amount, 'stage' => $stage, 'is_demo' => true]
+            );
+        }
+        $this->line('CRM de '.$company->name.' listo con datos DEMO.');
     }
 }

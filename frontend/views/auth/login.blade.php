@@ -17,5 +17,6 @@
         @error('password') <p class="field-error" role="alert">{{ $message }}</p> @enderror
         <button class="button" type="submit">Ingresar</button>
     </form>
+    <p class="form-foot"><a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a></p>
 </section>
 @endsection

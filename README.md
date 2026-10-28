@@ -1,19 +1,26 @@
 # Multitena
 
-Aplicación multitenencia para gestionar empresas y sucursales. Un superadministrador registra empresas; la operación crea automáticamente su sucursal **Central** y un administrador. El administrador de empresa puede agregar sucursales y administradores asignados a ellas. Cada usuario ve solo los datos de su ámbito.
+Plataforma multitenencia de administración y CRM para empresas con una o varias sucursales. Cada empresa inicia con una sucursal **Central** y un administrador. Los contactos, oportunidades y notas quedan dentro de su empresa; un administrador de sucursal solo accede a su sucursal.
 
-## Requisitos
+## Funciones
 
-- PHP 8.4 con `pdo_sqlite`, `sqlite3`, `mbstring` y `openssl`.
-- Composer 2.
+- **Superadministrador:** crea empresas, revisa indicadores globales, edita datos de contacto, activa o suspende empresas y administra sus administradores. No entra al CRM privado de las empresas.
+- **Administrador de empresa:** mantiene sucursales y administradores de sucursal, ve el CRM completo de su empresa y consulta el registro de actividad.
+- **Administrador de sucursal:** gestiona contactos, oportunidades y seguimiento de su sucursal.
+- **CRM:** fichas de contacto, estados, organizaciones, origen, notas con autor y fecha, oportunidades con etapa, monto y cierre estimado; búsqueda, filtros, paginación y exportación CSV.
+- **Acceso:** inicio y cierre de sesión, límite de intentos, cambio y recuperación de contraseña, bloqueo inmediato de cuentas y empresas suspendidas. La sucursal Central no se puede suspender ni renombrar; una empresa debe conservar al menos un administrador activo.
+- **Datos:** migraciones aditivas, SQLite persistente, datos DEMO etiquetados y registro de cambios. La desactivación conserva los registros para consulta y reactivación.
 
-## Estructura
+## Requisitos y estructura
 
-- `backend/`: Laravel 13, rutas, modelos, migraciones, autenticación y pruebas.
-- `frontend/`: vistas Blade (HTML), CSS y JavaScript sin compilación.
-- `bd/`: SQLite local. El archivo de datos se excluye de Git para conservar datos y credenciales.
+PHP 8.4, Composer 2 y las extensiones `pdo_sqlite`, `sqlite3`, `mbstring` y `openssl`, o Docker con Compose.
 
-## Instalación
+- `backend/`: Laravel 13, lógica, migraciones y pruebas.
+- `frontend/`: vistas Blade con HTML, CSS y JavaScript sin compilación.
+- `bd/`: SQLite local y respaldos locales; no se publican en Git.
+- `Dockerfile`, `compose.yaml`, `docker/`: ejecución en contenedor con volumen SQLite propio.
+
+## Inicio local
 
 Desde `backend/`:
 
@@ -27,20 +34,39 @@ php artisan app:create-super-admin
 php artisan serve
 ```
 
-Abrí `http://127.0.0.1:8000/login`. El comando del superadministrador solicita nombre, correo y contraseña de forma interactiva. No se incluyen credenciales en Git.
+Abrí `http://127.0.0.1:8000/login`. Al actualizar una instalación existente, hacé un respaldo de `bd/database.sqlite` y ejecutá `php artisan migrate --force`. No uses `migrate:fresh` sobre datos reales.
 
-Al crear una empresa, el correo sugerido es `admin@<nombre-normalizado>.com` (por ejemplo, Pepsi → `admin@pepsi.com`). Se puede editar para usar el dominio real. El superadministrador define la contraseña inicial y la comparte de forma segura. La creación de empresa, sucursal y usuario ocurre dentro de una transacción de base de datos.
+## Inicio con Docker
 
-## Datos de demostración
+Desde la raíz del repositorio, en la terminal de VS Code:
 
-Para una instalación local, ejecutá `php artisan app:seed-demo` desde `backend/`. Crea **Pepsi (DEMO)** y **Coca-Cola (DEMO)**, con sucursales y usuarios para probar ambos niveles de administrador. El comando muestra contraseñas aleatorias una sola vez: guardalas en un lugar seguro. Puede ejecutarse nuevamente sin duplicar ni modificar registros existentes. Se niega a ejecutarse en producción. Los registros DEMO tienen una marca visible y sus correos usan el dominio reservado `.test`.
+```powershell
+docker compose up -d --build
+docker compose exec app php artisan app:create-super-admin
+docker compose exec app php artisan app:seed-demo
+```
 
-La base `bd/database.sqlite` es local y está fuera de Git. Al clonar el repositorio se crea una base nueva; los datos DEMO no se publican.
+Abrí `http://127.0.0.1:8001/login`. `docker compose ps` muestra el estado; `docker compose logs -f app` muestra el registro y `docker compose down` detiene el contenedor. Los datos del contenedor están en el volumen `multitena_app_data` y no modifican `bd/database.sqlite` de Windows. No uses `docker compose down -v` si querés conservarlos.
+
+VS Code incluye tareas para iniciar Docker, ejecutar las pruebas y abrir el servidor Laravel local. Están en `.vscode/tasks.json` y aparecen en **Terminal → Ejecutar tarea**.
+
+La primera ejecución genera una clave de aplicación dentro del volumen y aplica las migraciones. El contenedor usa el servidor integrado de PHP y el puerto queda limitado a `127.0.0.1`, por lo que esta configuración está destinada a desarrollo y demostración local.
+
+## Datos DEMO
+
+`php artisan app:seed-demo` (o `docker compose exec app php artisan app:seed-demo`) crea dos empresas **DEMO**, sus sucursales y usuarios, más cuatro contactos y cuatro oportunidades de ejemplo. Los correos de prueba usan `.test` y los registros muestran la etiqueta `DEMO`. El comando imprime contraseñas aleatorias solo al crear cada usuario; guardalas. Si lo ejecutás otra vez, no duplica ni reemplaza registros. Solo funciona en `local` o `testing`.
+
+## Correo y recuperación de acceso
+
+El enlace “¿Olvidaste tu contraseña?” usa tokens de un solo uso y el sistema de correo de Laravel. Por defecto `MAIL_MAILER=log` registra el mensaje en los logs para pruebas locales. Para enviar correos reales, configurá `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` y `MAIL_FROM_ADDRESS` en `backend/.env` o como variables del contenedor. No incluyas secretos en Git. El formulario no indica si una dirección está registrada.
 
 ## Pruebas
 
-Desde `backend/`: `php artisan test`. Las pruebas usan SQLite en memoria y no cambian `bd/database.sqlite`.
+Desde `backend/`:
 
-## Funciones disponibles
+```powershell
+php artisan test
+php artisan view:cache
+```
 
-Incluye registro de empresas, sucursal Central automática, creación de sucursales adicionales, administradores de sucursal, inicio y cierre de sesión, cambio de contraseña y paneles separados. La edición o eliminación de empresas y sucursales todavía no está implementada.
+Las pruebas usan SQLite en memoria y no cambian `bd/database.sqlite`. El flujo de demostración y los criterios para preparar una instalación comercial están en [docs/PRODUCTO.md](docs/PRODUCTO.md).

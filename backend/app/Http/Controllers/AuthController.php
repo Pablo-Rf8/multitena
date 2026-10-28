@@ -25,7 +25,15 @@ class AuthController extends Controller
             return back()->withErrors(['email' => 'Correo o contraseña incorrectos.'])->onlyInput('email');
         }
 
+        $user = $request->user();
+        if (! $user->is_active || ($user->role !== 'super_admin' && (! $user->company?->is_active || ! $user->branch?->is_active))) {
+            Auth::logout();
+
+            return back()->withErrors(['email' => 'Tu acceso está suspendido. Contactá al administrador.'])->onlyInput('email');
+        }
+
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));
     }
