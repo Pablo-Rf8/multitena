@@ -64,7 +64,7 @@
                     @foreach ($company->users as $member)
                         <tr>
                             <td>{{ $member->name }}</td><td>{{ $member->email }}</td>
-                            <td>{{ $member->role === 'company_admin' ? 'Administrador de empresa' : 'Administrador de sucursal' }}</td>
+                            <td>{{ ['company_admin' => 'Administrador de empresa', 'branch_admin' => 'Administrador de sucursal', 'employee' => 'Empleado'][$member->role] ?? $member->role }}</td>
                             <td>{{ $company->branches->firstWhere('id', $member->branch_id)?->name }}</td>
                             <td>{{ $member->is_active ? 'Activo' : 'Suspendido' }}</td>
                             <td>
@@ -76,7 +76,7 @@
                                         <button class="text-button" type="submit">{{ $member->is_active ? 'Suspender' : 'Activar' }}</button>
                                     </form>
                                 @else
-                                    <span class="muted">Gestiona el superadministrador</span>
+                                    <span class="muted">{{ $member->role === 'employee' ? 'Ver en Personal y acceso' : 'Gestiona el superadministrador' }}</span>
                                 @endif
                             </td>
                         </tr>

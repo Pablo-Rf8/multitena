@@ -7,16 +7,16 @@
     <div class="section-head">
         <div>
             <p class="eyebrow">Superadministración</p>
-            <h1>Empresas</h1>
-            <p class="intro">Cada empresa inicia con una sucursal Central y un administrador asignado.</p>
+            <h1>Vista general de la plataforma</h1>
+            <p class="intro">Empresas, accesos y operación en un solo lugar.</p>
         </div>
         <a class="button" href="{{ route('companies.create') }}">Crear empresa</a>
     </div>
     <div class="stats">
         <div class="stat"><strong>{{ $companyCount }}</strong><span>Empresas</span></div>
-        <div class="stat"><strong>{{ $activeCount }}</strong><span>Activas</span></div>
-        <div class="stat"><strong>{{ $contactCount }}</strong><span>Contactos CRM</span></div>
-        <div class="stat"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></div>
+        <div class="stat"><strong>{{ $userCount }}</strong><span>Usuarios</span></div>
+        <div class="stat"><strong>{{ $branchCount }}</strong><span>Sucursales</span></div>
+        <div class="stat"><strong>{{ $pendingCount }}</strong><span>Solicitudes pendientes</span></div>
     </div>
     <form method="get" action="{{ route('dashboard') }}" class="filter-bar">
         <label class="sr-only" for="company-search">Buscar empresa</label>

@@ -10,7 +10,7 @@
             <h1>Oportunidades</h1>
             <p class="intro">Seguimiento de posibles ventas, desde el primer contacto hasta el cierre.</p>
         </div>
-        <a class="button" href="{{ route('contacts.index') }}">Elegir contacto</a>
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a class="button" href="{{ route('contacts.index') }}">Elegir contacto</a>@endif
     </div>
     <div class="stats">
         @foreach(['new'=>'Nuevas','qualified'=>'Calificadas','proposal'=>'Propuestas','won'=>'Ganadas','lost'=>'Perdidas'] as $key => $label)
@@ -40,7 +40,7 @@
         <a href="{{ route('opportunities.export', request()->only(['q','stage','branch_id'])) }}">Exportar CSV</a>
     </form>
     @if($opportunities->isEmpty())
-        <p class="empty-state">No hay oportunidades con estos filtros. Abrí un contacto para crear una.</p>
+        <p class="empty-state">No hay oportunidades con estos filtros.</p>
     @else
         <div class="table-scroll">
             <table>
@@ -49,12 +49,12 @@
                     @foreach($opportunities as $item)
                         <tr>
                             <td><strong>{{ $item->title }}</strong> @if($item->is_demo)<span class="tag">DEMO</span>@endif</td>
-                            <td><a href="{{ route('contacts.show', $item->contact) }}">{{ $item->contact->name }}</a></td>
+            <td>@if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a href="{{ route('contacts.show', $item->contact) }}">{{ $item->contact->name }}</a>@else{{ $item->contact->name }}@endif</td>
                             <td>{{ $item->branch->name }}</td>
                             <td>{{ ['new'=>'Nueva','qualified'=>'Calificada','proposal'=>'Propuesta','won'=>'Ganada','lost'=>'Perdida'][$item->stage] ?? $item->stage }}</td>
                             <td>{{ number_format($item->amount_cents / 100, 2) }} {{ auth()->user()->company->currency }}</td>
                             <td>{{ $item->expected_close_on?->format('d/m/Y') ?? '—' }}</td>
-                            <td><a href="{{ route('opportunities.edit', $item) }}">Editar</a></td>
+            <td>@if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a href="{{ route('opportunities.edit', $item) }}">Editar</a>@else<span class="muted">Solo lectura</span>@endif</td>
                         </tr>
                     @endforeach
                 </tbody>

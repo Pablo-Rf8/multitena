@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureCompanyAdmin;
 use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\EnsureTenantUser;
 use App\Http\Middleware\EnsureMobileSession;
+use App\Http\Middleware\EnsureCrmPermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'active_account' => EnsureActiveAccount::class,
             'tenant_user' => EnsureTenantUser::class,
             'mobile_session' => EnsureMobileSession::class,
+            'crm_permission' => EnsureCrmPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -46,7 +46,11 @@ class ContactController extends Controller
 
     public function show(Request $request, int $contact, CrmScope $scope): View
     {
-        $contact = $scope->contacts($request->user())->with(['branch', 'notes.author', 'opportunities'])->findOrFail($contact);
+        $relations = ['branch', 'notes.author'];
+        if ($request->user()->role !== 'employee' || in_array('opportunities.read', $request->user()->category?->permissions ?? [], true)) {
+            $relations[] = 'opportunities';
+        }
+        $contact = $scope->contacts($request->user())->with($relations)->findOrFail($contact);
 
         return view('contacts.show', compact('contact'));
     }
@@ -125,7 +129,7 @@ class ContactController extends Controller
                 ? ['required', 'integer', $branchRule]
                 : ['prohibited'],
         ]);
-        if ($request->user()->role === 'branch_admin') {
+        if ($request->user()->role !== 'company_admin') {
             $data['branch_id'] = $request->user()->branch_id;
         }
 

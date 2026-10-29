@@ -18,4 +18,27 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('submit', event => {
     const message = event.target.dataset.confirm;
     if (message && !window.confirm(message)) event.preventDefault();
+    if (!event.defaultPrevented && event.target.method.toLowerCase() !== 'get') {
+        document.body.classList.add('is-loading');
+        const button = event.submitter;
+        if (button) button.setAttribute('aria-disabled', 'true');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const open = document.querySelector('[data-sidebar-open]');
+    const close = () => {
+        document.body.classList.remove('sidebar-open');
+        open?.setAttribute('aria-expanded', 'false');
+        open?.focus();
+    };
+    open?.addEventListener('click', () => {
+        document.body.classList.add('sidebar-open');
+        open.setAttribute('aria-expanded', 'true');
+        document.querySelector('[data-sidebar-close]')?.focus();
+    });
+    document.querySelectorAll('[data-sidebar-close]').forEach(button => button.addEventListener('click', close));
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) close();
+    });
 });

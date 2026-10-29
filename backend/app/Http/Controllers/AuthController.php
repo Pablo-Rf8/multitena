@@ -26,7 +26,7 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
-        if (! $user->is_active || $user->role === 'employee' || ($user->role !== 'super_admin' && (! $user->company?->is_active || ! $user->branch?->is_active))) {
+        if (! $user->is_active || ($user->role === 'employee' && ($user->approval_status !== 'approved' || ! \App\Models\CompanySetting::firstOrCreate(['company_id' => $user->company_id])->employee_access_enabled)) || ($user->role !== 'super_admin' && (! $user->company?->is_active || ! $user->branch?->is_active))) {
             Auth::logout();
 
             return back()->withErrors(['email' => 'Tu acceso está suspendido. Contactá al administrador.'])->onlyInput('email');
@@ -40,9 +40,13 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $companyId = $request->user()?->company_id;
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        if ($companyId) {
+            $request->session()->put('login_brand_company_id', $companyId);
+        }
 
         return redirect()->route('login');
     }

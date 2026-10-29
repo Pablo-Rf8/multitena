@@ -11,7 +11,7 @@
             <h1>{{ $contact->name }} @if($contact->is_demo)<span class="tag">DEMO</span>@endif</h1>
             <p class="intro">{{ $contact->organization ?: 'Sin organización' }} · {{ $contact->branch->name }}</p>
         </div>
-        <a class="button button-secondary" href="{{ route('contacts.edit', $contact) }}">Editar contacto</a>
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-secondary" href="{{ route('contacts.edit', $contact) }}">Editar contacto</a>@endif
     </div>
     <dl class="details">
         <div><dt>Estado</dt><dd>{{ ['prospect'=>'Prospecto','qualified'=>'Calificado','customer'=>'Cliente','inactive'=>'Inactivo'][$contact->status] ?? $contact->status }}</dd></div>
@@ -19,9 +19,10 @@
         <div><dt>Teléfono</dt><dd>{{ $contact->phone ?: 'Sin registrar' }}</dd></div>
         <div><dt>Origen</dt><dd>{{ $contact->source ?: 'Sin registrar' }}</dd></div>
     </dl>
+    @if(auth()->user()->role !== 'employee' || in_array('opportunities.read', auth()->user()->category?->permissions ?? [], true))
     <div class="section-head section-subhead">
         <h2>Oportunidades</h2>
-        <a class="button button-secondary" href="{{ route('opportunities.create', ['contact' => $contact->id]) }}">Agregar oportunidad</a>
+        @if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-secondary" href="{{ route('opportunities.create', ['contact' => $contact->id]) }}">Agregar oportunidad</a>@endif
     </div>
     @if($contact->opportunities->isEmpty())
         <p class="empty-state">Este contacto todavía no tiene oportunidades.</p>
@@ -36,14 +37,16 @@
                             <td>{{ ['new'=>'Nueva','qualified'=>'Calificada','proposal'=>'Propuesta','won'=>'Ganada','lost'=>'Perdida'][$item->stage] ?? $item->stage }}</td>
                             <td>{{ number_format($item->amount_cents / 100, 2) }} {{ auth()->user()->company->currency }}</td>
                             <td>{{ $item->expected_close_on?->format('d/m/Y') ?? '—' }}</td>
-                            <td><a href="{{ route('opportunities.edit', $item) }}">Editar</a></td>
+            <td>@if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a href="{{ route('opportunities.edit', $item) }}">Editar</a>@else<span class="muted">Solo lectura</span>@endif</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     @endif
+    @endif
     <h2>Seguimiento</h2>
+    @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))
     <form method="post" action="{{ route('contacts.notes.store', $contact) }}" class="form-stack note-form">
         @csrf
         <label for="body">Nueva nota</label>
@@ -51,6 +54,7 @@
         @error('body')<p class="field-error" role="alert">{{ $message }}</p>@enderror
         <button class="button" type="submit">Agregar nota</button>
     </form>
+    @endif
     @forelse($contact->notes as $note)
         <article class="note"><div class="muted">{{ $note->author->name }} · {{ $note->created_at->format('d/m/Y H:i') }}</div><p>{{ $note->body }}</p></article>
     @empty

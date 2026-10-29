@@ -12,6 +12,8 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **Datos:** migraciones aditivas, SQLite persistente, datos DEMO etiquetados y registro de cambios. La desactivación conserva los registros para consulta y reactivación.
 - **Personal:** el superadministrador registra empleados individuales o importa un CSV (`name,email,password`, máximo 1000 filas). Quedan pendientes hasta que el administrador de su empresa los apruebe o rechace. Cada empresa configura categorías, permisos de lectura y escritura del CRM, dominios de correo y acceso móvil.
 - **API móvil:** Laravel Sanctum emite tokens por sesión y dispositivo con vencimiento. La empresa puede exigir aprobación de dispositivos nuevos, consultar sus sesiones y revocar dispositivos. Las solicitudes pendientes se guardan en `access_notifications` para una futura integración push; aún no se envían avisos push externos.
+- **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El tema se toma de la empresa autenticada; el acceso público es neutro hasta iniciar sesión y recuerda la marca de la última empresa después de cerrar sesión en ese navegador. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
+- **Empleados web:** un empleado aprobado puede entrar al panel web y ve únicamente el CRM de su sucursal según los permisos de su categoría. Las rutas comprueban los permisos además de ocultar acciones no autorizadas en la interfaz.
 
 ## API móvil
 

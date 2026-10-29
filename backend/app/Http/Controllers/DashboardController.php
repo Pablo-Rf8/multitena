@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\Contact;
 use App\Models\Opportunity;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -30,10 +32,23 @@ class DashboardController extends Controller
                 'activeCount' => Company::where('is_active', true)->count(),
                 'contactCount' => Contact::count(),
                 'opportunityCount' => Opportunity::count(),
+                'userCount' => User::count(),
+                'branchCount' => DB::table('branches')->count(),
+                'pendingCount' => User::where('role', 'employee')->where('approval_status', 'pending')->count(),
             ]);
         }
 
-        abort_unless(in_array($user->role, ['company_admin', 'branch_admin'], true) && $user->company_id && $user->branch_id, 403);
+        abort_unless(in_array($user->role, ['company_admin', 'branch_admin', 'employee'], true) && $user->company_id && $user->branch_id, 403);
+
+        if ($user->role === 'employee') {
+            return view('employees.dashboard', [
+                'company' => $user->company,
+                'branch' => $user->branch,
+                'permissions' => $user->category?->permissions ?? [],
+                'contactCount' => Contact::where('company_id', $user->company_id)->where('branch_id', $user->branch_id)->count(),
+                'opportunityCount' => Opportunity::where('company_id', $user->company_id)->where('branch_id', $user->branch_id)->count(),
+            ]);
+        }
 
         return view('companies.dashboard', [
             'company' => $user->company()->with($user->role === 'company_admin' ? ['branches', 'users'] : [])->firstOrFail(),

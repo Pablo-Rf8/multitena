@@ -10,7 +10,7 @@
             <h1>Contactos</h1>
             <p class="intro">Personas y organizaciones que atiende tu equipo.</p>
         </div>
-        <a class="button" href="{{ route('contacts.create') }}">Agregar contacto</a>
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button" href="{{ route('contacts.create') }}">Agregar contacto</a>@endif
     </div>
     <form method="get" action="{{ route('contacts.index') }}" class="filter-bar">
         <label class="sr-only" for="contact-search">Buscar</label>
@@ -35,7 +35,7 @@
         <a href="{{ route('contacts.export', request()->only(['q','status','branch_id'])) }}">Exportar CSV</a>
     </form>
     @if($contacts->isEmpty())
-        <p class="empty-state">No hay contactos con estos filtros. Agregá uno para comenzar.</p>
+        <p class="empty-state">No hay contactos con estos filtros.</p>
     @else
         <div class="table-scroll">
             <table>

@@ -13,12 +13,14 @@ use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\WorkforceController;
+use App\Http\Controllers\BrandingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
 Route::get('/assets/app.css', fn () => response()->file(base_path('../frontend/css/app.css'), ['Content-Type' => 'text/css']))->name('assets.css');
 Route::get('/assets/app.js', fn () => response()->file(base_path('../frontend/js/app.js'), ['Content-Type' => 'text/javascript']))->name('assets.js');
+Route::get('/assets/theme.css', fn () => response()->file(base_path('../frontend/css/theme.css'), ['Content-Type' => 'text/css']))->name('assets.theme');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'show'])->name('login');
@@ -34,25 +36,28 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/account/password', [PasswordController::class, 'update'])->name('password.update');
+    Route::get('/branding/logo', [BrandingController::class, 'logo'])->middleware('tenant_user')->name('branding.logo');
 
     Route::middleware('tenant_user')->group(function () {
-        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-        Route::get('/contacts/export', [ContactController::class, 'export'])->name('contacts.export');
-        Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
-        Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
-        Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
-        Route::get('/contacts/{contact}/edit', [ContactController::class, 'edit'])->name('contacts.edit');
-        Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
-        Route::post('/contacts/{contact}/notes', [ContactNoteController::class, 'store'])->name('contacts.notes.store');
-        Route::get('/opportunities', [OpportunityController::class, 'index'])->name('opportunities.index');
-        Route::get('/opportunities/export', [OpportunityController::class, 'export'])->name('opportunities.export');
-        Route::get('/opportunities/create', [OpportunityController::class, 'create'])->name('opportunities.create');
-        Route::post('/opportunities', [OpportunityController::class, 'store'])->name('opportunities.store');
-        Route::get('/opportunities/{opportunity}/edit', [OpportunityController::class, 'edit'])->name('opportunities.edit');
-        Route::put('/opportunities/{opportunity}', [OpportunityController::class, 'update'])->name('opportunities.update');
+        Route::get('/contacts', [ContactController::class, 'index'])->middleware('crm_permission:contacts.read')->name('contacts.index');
+        Route::get('/contacts/export', [ContactController::class, 'export'])->middleware('crm_permission:contacts.read')->name('contacts.export');
+        Route::get('/contacts/create', [ContactController::class, 'create'])->middleware('crm_permission:contacts.write')->name('contacts.create');
+        Route::post('/contacts', [ContactController::class, 'store'])->middleware('crm_permission:contacts.write')->name('contacts.store');
+        Route::get('/contacts/{contact}', [ContactController::class, 'show'])->middleware('crm_permission:contacts.read')->name('contacts.show');
+        Route::get('/contacts/{contact}/edit', [ContactController::class, 'edit'])->middleware('crm_permission:contacts.write')->name('contacts.edit');
+        Route::put('/contacts/{contact}', [ContactController::class, 'update'])->middleware('crm_permission:contacts.write')->name('contacts.update');
+        Route::post('/contacts/{contact}/notes', [ContactNoteController::class, 'store'])->middleware('crm_permission:contacts.write')->name('contacts.notes.store');
+        Route::get('/opportunities', [OpportunityController::class, 'index'])->middleware('crm_permission:opportunities.read')->name('opportunities.index');
+        Route::get('/opportunities/export', [OpportunityController::class, 'export'])->middleware('crm_permission:opportunities.read')->name('opportunities.export');
+        Route::get('/opportunities/create', [OpportunityController::class, 'create'])->middleware('crm_permission:opportunities.write')->name('opportunities.create');
+        Route::post('/opportunities', [OpportunityController::class, 'store'])->middleware('crm_permission:opportunities.write')->name('opportunities.store');
+        Route::get('/opportunities/{opportunity}/edit', [OpportunityController::class, 'edit'])->middleware('crm_permission:opportunities.write')->name('opportunities.edit');
+        Route::put('/opportunities/{opportunity}', [OpportunityController::class, 'update'])->middleware('crm_permission:opportunities.write')->name('opportunities.update');
     });
 
     Route::middleware('company_admin')->group(function () {
+        Route::get('/branding', [BrandingController::class, 'edit'])->name('branding.edit');
+        Route::put('/branding', [BrandingController::class, 'update'])->name('branding.update');
         Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
         Route::post('/workforce/categories', [WorkforceController::class, 'category'])->name('workforce.categories');
         Route::put('/workforce/settings', [WorkforceController::class, 'settings'])->name('workforce.settings');
