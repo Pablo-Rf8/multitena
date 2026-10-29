@@ -10,6 +10,14 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **CRM:** fichas de contacto, estados, organizaciones, origen, notas con autor y fecha, oportunidades con etapa, monto y cierre estimado; búsqueda, filtros, paginación y exportación CSV.
 - **Acceso:** inicio y cierre de sesión, límite de intentos, cambio y recuperación de contraseña, bloqueo inmediato de cuentas y empresas suspendidas. La sucursal Central no se puede suspender ni renombrar; una empresa debe conservar al menos un administrador activo.
 - **Datos:** migraciones aditivas, SQLite persistente, datos DEMO etiquetados y registro de cambios. La desactivación conserva los registros para consulta y reactivación.
+- **Personal:** el superadministrador registra empleados individuales o importa un CSV (`name,email,password`, máximo 1000 filas). Quedan pendientes hasta que el administrador de su empresa los apruebe o rechace. Cada empresa configura categorías, permisos de lectura y escritura del CRM, dominios de correo y acceso móvil.
+- **API móvil:** Laravel Sanctum emite tokens por sesión y dispositivo con vencimiento. La empresa puede exigir aprobación de dispositivos nuevos, consultar sus sesiones y revocar dispositivos. Las solicitudes pendientes se guardan en `access_notifications` para una futura integración push; aún no se envían avisos push externos.
+
+## API móvil
+
+`POST /api/login` recibe `email`, `password`, `company_code`, `device_id` y `device_name`. El código de la empresa se encuentra en `companies.code`; los códigos de las empresas existentes se generan con la migración. El identificador de dispositivo solo identifica el equipo, nunca sustituye la contraseña. La respuesta entrega un token Bearer y su vencimiento. Con el token: `GET /api/session`, `POST /api/logout`, `GET/POST /api/contacts` y `GET/POST /api/opportunities`. Los empleados necesitan una categoría con el permiso correspondiente (`contacts.read`, `contacts.write`, `opportunities.read`, `opportunities.write`). El superadministrador no accede al CRM por API.
+
+Ejecutá `php artisan schedule:work` o programá `php artisan schedule:run` para que las sesiones vencidas se marquen como expiradas. La API rechaza tokens vencidos incluso si el programador todavía no corrió. La revocación del dispositivo invalida sus tokens inmediatamente.
 
 ## Requisitos y estructura
 

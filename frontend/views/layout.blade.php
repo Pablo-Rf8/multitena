@@ -20,7 +20,11 @@
                         <a href="{{ route('opportunities.index') }}" @class(['current' => request()->routeIs('opportunities.*')])>Oportunidades</a>
                     @endif
                     @if (auth()->user()->role === 'company_admin')
+                        <a href="{{ route('workforce.index') }}" @class(['current' => request()->routeIs('workforce.*')])>Personal</a>
                         <a href="{{ route('activity.index') }}" @class(['current' => request()->routeIs('activity.*')])>Actividad</a>
+                    @endif
+                    @if (auth()->user()->role === 'super_admin')
+                        <a href="{{ route('employees.create') }}" @class(['current' => request()->routeIs('employees.*')])>Registrar empleados</a>
                     @endif
                 </nav>
                 <div class="account">

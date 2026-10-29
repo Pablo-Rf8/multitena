@@ -9,7 +9,7 @@ class Company extends Model
 {
     protected $attributes = ['is_active' => true];
 
-    protected $fillable = ['name', 'slug', 'is_demo', 'is_active', 'contact_email', 'phone', 'currency'];
+    protected $fillable = ['name', 'slug', 'code', 'is_demo', 'is_active', 'contact_email', 'phone', 'currency'];
 
     protected function casts(): array
     {
@@ -24,6 +24,11 @@ class Company extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
     }
 
     public function contacts(): HasMany

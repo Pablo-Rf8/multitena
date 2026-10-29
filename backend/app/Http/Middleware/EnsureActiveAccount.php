@@ -13,7 +13,7 @@ class EnsureActiveAccount
     {
         $user = $request->user();
         abort_if($user->role !== 'super_admin' && (! $user->company_id || ! $user->branch_id), 403);
-        $allowed = $user?->is_active && ($user->role === 'super_admin' || (
+        $allowed = $user?->is_active && ($user->role !== 'employee' || $user->approval_status === 'approved') && ($user->role === 'super_admin' || (
             $user->company?->is_active && $user->branch?->is_active
         ));
 

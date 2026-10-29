@@ -26,7 +26,7 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
-        if (! $user->is_active || ($user->role !== 'super_admin' && (! $user->company?->is_active || ! $user->branch?->is_active))) {
+        if (! $user->is_active || $user->role === 'employee' || ($user->role !== 'super_admin' && (! $user->company?->is_active || ! $user->branch?->is_active))) {
             Auth::logout();
 
             return back()->withErrors(['email' => 'Tu acceso está suspendido. Contactá al administrador.'])->onlyInput('email');

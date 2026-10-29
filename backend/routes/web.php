@@ -12,6 +12,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\WorkforceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -52,6 +53,12 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     });
 
     Route::middleware('company_admin')->group(function () {
+        Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+        Route::post('/workforce/categories', [WorkforceController::class, 'category'])->name('workforce.categories');
+        Route::put('/workforce/settings', [WorkforceController::class, 'settings'])->name('workforce.settings');
+        Route::patch('/workforce/employees/{employee}', [WorkforceController::class, 'review'])->name('workforce.review');
+        Route::patch('/workforce/employees/{employee}/category', [WorkforceController::class, 'assignCategory'])->name('workforce.assign-category');
+        Route::patch('/workforce/devices/{device}', [WorkforceController::class, 'device'])->name('workforce.device');
         Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
         Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
         Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
@@ -66,6 +73,9 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     });
 
     Route::middleware('super_admin')->group(function () {
+        Route::get('/employees/create', [WorkforceController::class, 'create'])->name('employees.create');
+        Route::post('/employees', [WorkforceController::class, 'store'])->name('employees.store');
+        Route::post('/employees/import', [WorkforceController::class, 'import'])->name('employees.import');
         Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
         Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');

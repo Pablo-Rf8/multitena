@@ -20,6 +20,7 @@
         <div class="stat"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></div>
     </div>
     <dl class="details">
+        <div><dt>Código de empresa</dt><dd>{{ $company->code }}</dd></div>
         <div><dt>Moneda</dt><dd>{{ $company->currency }}</dd></div>
         <div><dt>Correo de contacto</dt><dd>{{ $company->contact_email ?: 'Sin registrar' }}</dd></div>
         <div><dt>Teléfono</dt><dd>{{ $company->phone ?: 'Sin registrar' }}</dd></div>

@@ -29,7 +29,7 @@ class CreateCompany
         }
 
         return DB::transaction(function () use ($name, $slug, $email, $password, $isDemo, $currency) {
-            $company = Company::create(['name' => $name, 'slug' => $slug, 'is_demo' => $isDemo, 'currency' => $currency]);
+            $company = Company::create(['name' => $name, 'slug' => $slug, 'code' => strtoupper(Str::random(10)), 'is_demo' => $isDemo, 'currency' => $currency]);
             $branch = $company->branches()->create(['name' => 'Central', 'is_central' => true]);
             $company->users()->create([
                 'branch_id' => $branch->id,
