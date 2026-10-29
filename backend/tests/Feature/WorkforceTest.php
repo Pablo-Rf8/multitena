@@ -36,6 +36,7 @@ class WorkforceTest extends TestCase
         $employee = User::where('email', 'eva@pepsi.test')->firstOrFail();
         $this->assertSame('pending', $employee->approval_status);
         $this->post('/logout');
+        $this->post('/login/company', ['company_code' => $pepsi->code])->assertRedirect('/login');
         $this->post('/login', ['email' => $employee->email, 'password' => 'employee-password-123'])->assertSessionHasErrors();
         $this->actingAs($coca->users()->firstOrFail())->patch('/workforce/employees/'.$employee->id, ['decision' => 'approved'])->assertNotFound();
         $this->actingAs($pepsi->users()->firstOrFail())->get('/workforce')->assertOk()->assertSee('Eva');

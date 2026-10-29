@@ -17,6 +17,12 @@
         <input id="theme_accent" type="color" name="theme_accent" value="{{ old('theme_accent', $company->theme_accent) }}" required>
         <label for="logo">Logotipo PNG, JPG o WebP (máximo 1 MB)</label>
         <input id="logo" type="file" name="logo" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+        @if(in_array($company->slug, ['pepsi-demo', 'coca-cola-demo'], true))
+            <label for="logo_mode">Logotipo visible</label>
+            <select id="logo_mode" name="logo_mode"><option value="demo" @selected($company->logo_mode === 'demo')>De demostración</option><option value="custom" @selected($company->logo_mode !== 'demo')>Cargado por la empresa</option></select>
+        @else
+            <input type="hidden" name="logo_mode" value="custom">
+        @endif
         @if($company->logo_path)<p class="hint">Hay un logotipo cargado. Subí otro archivo para reemplazarlo.</p>@else<p class="hint">Mientras no subas uno, se muestra una marca con la inicial de la empresa.</p>@endif
         <button class="button" type="submit">Guardar identidad visual</button>
     </form>

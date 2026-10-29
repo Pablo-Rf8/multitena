@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Marca de demostración Pepsi">
+<circle cx="32" cy="32" r="30" fill="#0754a6"/>
+<path d="M5 33c15-8 27-5 54 0v12C39 37 24 36 5 44Z" fill="#d22739"/>
+<path d="M5 29c17-7 36-6 54 0v7C37 31 21 30 5 37Z" fill="#fff"/>
+<circle cx="32" cy="32" r="29" fill="none" stroke="#fff" stroke-width="2"/>
+<text x="32" y="22" fill="#fff" font-family="Arial,sans-serif" font-size="12" font-weight="800" text-anchor="middle">P</text>
+</svg>

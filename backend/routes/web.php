@@ -21,9 +21,15 @@ Route::get('/', fn () => redirect()->route('dashboard'));
 Route::get('/assets/app.css', fn () => response()->file(base_path('../frontend/css/app.css'), ['Content-Type' => 'text/css']))->name('assets.css');
 Route::get('/assets/app.js', fn () => response()->file(base_path('../frontend/js/app.js'), ['Content-Type' => 'text/javascript']))->name('assets.js');
 Route::get('/assets/theme.css', fn () => response()->file(base_path('../frontend/css/theme.css'), ['Content-Type' => 'text/css']))->name('assets.theme');
+Route::get('/assets/demo/pepsi.svg', fn () => response()->file(base_path('../frontend/assets/pepsi-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-pepsi');
+Route::get('/assets/demo/coca-cola.svg', fn () => response()->file(base_path('../frontend/assets/coca-cola-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-coca-cola');
+Route::get('/assets/company-logo/{code}', [BrandingController::class, 'publicLogo'])->name('branding.public-logo');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'show'])->name('login');
+    Route::post('/login/company', [AuthController::class, 'selectCompany'])->middleware('throttle:10,1')->name('login.company');
+    Route::get('/login/platform', [AuthController::class, 'selectPlatform'])->name('login.platform');
+    Route::get('/login/change', [AuthController::class, 'changeContext'])->name('login.change');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');

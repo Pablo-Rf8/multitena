@@ -2,9 +2,10 @@
 <html lang="es">
 @php
     $viewer = auth()->user();
-    $isPlatform = $viewer?->role === 'super_admin';
-    $brandCompany = $viewer?->company ?? (session('login_brand_company_id') ? \App\Models\Company::find(session('login_brand_company_id')) : null);
+    $isPlatform = $viewer?->role === 'super_admin' || (! $viewer && session('login_mode') === 'platform');
+    $brandCompany = $viewer?->company ?? (session('login_mode') === 'company' ? \App\Models\Company::where('is_active', true)->find(session('login_company_id')) : null);
     $brandName = $isPlatform || ! $brandCompany ? 'Multitena' : $brandCompany->name;
+    $brandLogo = $brandCompany?->logoUrl(public: ! $viewer);
     $themeStyle = $brandCompany && ! $isPlatform
         ? '--brand-primary:'.$brandCompany->theme_primary.';--brand-secondary:'.$brandCompany->theme_secondary.';--brand-accent:'.$brandCompany->theme_accent.';'
         : '';
@@ -25,8 +26,8 @@
         <aside class="sidebar" id="sidebar" aria-label="Navegación de {{ $brandName }}">
             <div class="sidebar-top">
                 <a class="brand" href="{{ route('dashboard') }}">
-                    @if(!$isPlatform && $brandCompany?->logo_path)
-                        <img class="brand-logo" src="{{ route('branding.logo') }}" alt="" width="42" height="42">
+                    @if(!$isPlatform && $brandLogo)
+                        <img class="brand-logo" src="{{ $brandLogo }}" alt="" width="42" height="42">
                     @else
                         <span class="brand-mark" aria-hidden="true">{{ $isPlatform ? 'M' : mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>
                     @endif
@@ -53,7 +54,7 @@
                     <form method="post" action="{{ route('logout') }}">@csrf<button class="text-button" type="submit">Salir</button></form>
                 </div>
                 @else
-                    <span class="public-brand">{{ $brandName }}</span>
+                    <span class="public-brand">@if($brandLogo)<img src="{{ $brandLogo }}" alt="" width="32" height="32">@endif {{ $brandName }}</span>
                 @endif
             </div>
         </header>

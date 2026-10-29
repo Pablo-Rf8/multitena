@@ -85,7 +85,7 @@ class CrmAndLifecycleTest extends TestCase
 
         $this->actingAs($super)->patch('/companies/'.$company->id.'/status', ['is_active' => '0'])->assertRedirect();
         $this->actingAs($admin)->get('/dashboard')->assertRedirect('/login');
-        $this->post('/login', ['email' => $admin->email, 'password' => 'correct-horse-battery'])->assertSessionHasErrors('email');
+        $this->post('/login/company', ['company_code' => $company->code])->assertSessionHasErrors('company_code');
         $this->assertDatabaseHas('companies', ['id' => $company->id, 'is_active' => false]);
         $this->assertDatabaseHas('branches', ['id' => $branch->id]);
         $this->assertDatabaseHas('users', ['id' => $admin->id]);

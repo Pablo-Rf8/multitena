@@ -40,8 +40,8 @@ class SeedDemoData extends Command
             DB::transaction(function () use ($creator, $name, $email, $password, $extraBranches, $branchAdminPassword) {
                 $company = $creator->handle($name, $email, $password, true);
                 $company->update($company->slug === 'pepsi-demo'
-                    ? ['theme_primary' => '#0754a6', 'theme_secondary' => '#102d5a', 'theme_accent' => '#d22739']
-                    : ['theme_primary' => '#bd1930', 'theme_secondary' => '#711323', 'theme_accent' => '#f5d6d9']);
+                    ? ['theme_primary' => '#0754a6', 'theme_secondary' => '#102d5a', 'theme_accent' => '#d22739', 'logo_mode' => 'demo']
+                    : ['theme_primary' => '#bd1930', 'theme_secondary' => '#711323', 'theme_accent' => '#f5d6d9', 'logo_mode' => 'demo']);
                 foreach ($extraBranches as $branchName) {
                     $branch = $company->branches()->create(['name' => $branchName, 'is_central' => false]);
                     if ($branchName === 'Norte' && $branchAdminPassword) {

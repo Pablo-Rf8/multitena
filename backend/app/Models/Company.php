@@ -9,7 +9,7 @@ class Company extends Model
 {
     protected $attributes = ['is_active' => true];
 
-    protected $fillable = ['name', 'slug', 'code', 'is_demo', 'is_active', 'contact_email', 'phone', 'currency', 'theme_primary', 'theme_secondary', 'theme_accent', 'logo_path'];
+    protected $fillable = ['name', 'slug', 'code', 'is_demo', 'is_active', 'contact_email', 'phone', 'currency', 'theme_primary', 'theme_secondary', 'theme_accent', 'logo_path', 'logo_mode'];
 
     protected function casts(): array
     {
@@ -39,5 +39,26 @@ class Company extends Model
     public function opportunities(): HasMany
     {
         return $this->hasMany(Opportunity::class);
+    }
+
+    public function logoUrl(bool $public = false): ?string
+    {
+        if ($this->logo_mode === 'demo') {
+            $demo = match ($this->slug) {
+                'pepsi-demo' => route('assets.demo-pepsi'),
+                'coca-cola-demo' => route('assets.demo-coca-cola'),
+                default => null,
+            };
+            if ($demo) return $demo;
+        }
+        if ($this->logo_path) {
+            return $public ? route('branding.public-logo', $this->code) : route('branding.logo');
+        }
+
+        return match ($this->slug) {
+            'pepsi-demo' => route('assets.demo-pepsi'),
+            'coca-cola-demo' => route('assets.demo-coca-cola'),
+            default => null,
+        };
     }
 }

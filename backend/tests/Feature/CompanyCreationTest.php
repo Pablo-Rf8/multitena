@@ -78,6 +78,7 @@ class CompanyCreationTest extends TestCase
 
         $pepsiAdmin = User::where('email', 'admin@pepsi.com')->firstOrFail();
         $this->post('/logout')->assertRedirect('/login');
+        $this->post('/login/company', ['company_code' => $pepsiAdmin->company->code])->assertRedirect('/login');
         $this->post('/login', [
             'email' => $pepsiAdmin->email,
             'password' => 'correct-horse-battery',
