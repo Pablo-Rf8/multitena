@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        if (env('TRUSTED_PROXIES')) $middleware->trustProxies(at: explode(',', env('TRUSTED_PROXIES')));
         $middleware->alias([
             'super_admin' => EnsureSuperAdmin::class,
             'company_admin' => EnsureCompanyAdmin::class,

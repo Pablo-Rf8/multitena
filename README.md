@@ -11,7 +11,8 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **Acceso:** inicio y cierre de sesión, límite de intentos, cambio y recuperación de contraseña, bloqueo inmediato de cuentas y empresas suspendidas. La sucursal Central no se puede suspender ni renombrar; una empresa debe conservar al menos un administrador activo.
 - **Datos:** migraciones aditivas, SQLite persistente, datos DEMO etiquetados y registro de cambios. La desactivación conserva los registros para consulta y reactivación.
 - **Personal:** el superadministrador registra empleados individuales o importa un CSV (`name,email,password`, máximo 1000 filas). Quedan pendientes hasta que el administrador de su empresa los apruebe o rechace. Cada empresa configura categorías, permisos de lectura y escritura del CRM, dominios de correo y acceso móvil.
-- **API móvil:** Laravel Sanctum emite tokens por sesión y dispositivo con vencimiento. La empresa puede exigir aprobación de dispositivos nuevos, consultar sus sesiones y revocar dispositivos. Las solicitudes pendientes se guardan en `access_notifications` para una futura integración push; aún no se envían avisos push externos.
+- **API móvil:** Laravel Sanctum emite tokens por sesión y dispositivo con vencimiento. La empresa puede exigir aprobación de dispositivos nuevos, consultar sus sesiones y revocar dispositivos. Las notificaciones se consultan en web y API; con Firebase configurado se envían por cola a dispositivos registrados.
+- **Personal y sesiones:** el administrador de empresa registra, revisa, edita y suspende empleados; edita permisos de categorías y consulta o revoca sesiones web y móviles. Los eventos de acceso se muestran en el centro de notificaciones.
 - **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El login muestra la marca al seleccionar el código de empresa y el panel usa la empresa autenticada. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
 - **Empleados web:** un empleado aprobado puede entrar al panel web y ve únicamente el CRM de su sucursal según los permisos de su categoría. Las rutas comprueban los permisos además de ocultar acciones no autorizadas en la interfaz.
 
@@ -19,9 +20,13 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 
 `POST /api/login` recibe `email`, `password`, `company_code`, `device_id` y `device_name`. El código de la empresa se encuentra en `companies.code`; los códigos de las empresas existentes se generan con la migración. El identificador de dispositivo solo identifica el equipo, nunca sustituye la contraseña. La respuesta entrega un token Bearer y su vencimiento. Con el token: `GET /api/session`, `POST /api/logout`, `GET/POST /api/contacts` y `GET/POST /api/opportunities`. Los empleados necesitan una categoría con el permiso correspondiente (`contacts.read`, `contacts.write`, `opportunities.read`, `opportunities.write`). El superadministrador no accede al CRM por API.
 
+Además, `PUT /api/device/push-token` registra el token de Firebase del dispositivo autenticado, y `GET /api/notifications` y `PATCH /api/notifications/{id}/read` gestionan sus avisos. El token push no es una credencial de acceso.
+
 En el login web, el usuario introduce primero el **código de empresa** y luego su correo y contraseña. El código aparece en el panel de empresa y en su detalle para el superadministrador. La pantalla ya muestra el tema y logotipo de la empresa antes de pedir credenciales. El enlace **Acceso de superadministrador** abre el login global sin código. Los logotipos de Pepsi y Coca-Cola incluidos en `frontend/assets/` son diseños de demostración; un administrador puede elegir entre el DEMO y su archivo cargado desde **Identidad visual** sin borrar el anterior.
 
 Ejecutá `php artisan schedule:work` o programá `php artisan schedule:run` para que las sesiones vencidas se marquen como expiradas. La API rechaza tokens vencidos incluso si el programador todavía no corrió. La revocación del dispositivo invalida sus tokens inmediatamente.
+
+La configuración de producción y las variables requeridas están en [docs/PRODUCCION.md](docs/PRODUCCION.md). No hay despliegue activo.
 
 ## Requisitos y estructura
 

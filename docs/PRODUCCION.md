@@ -1,0 +1,13 @@
+# Preparación de producción
+
+La plantilla está en `backend/.env.production.example`. Copiala fuera de Git como `backend/.env.production` y completá `APP_KEY` con `php artisan key:generate --show`, `APP_URL` con el dominio HTTPS real y `TRUSTED_PROXIES` con las IP de tu proxy. Nunca uses una clave nueva sobre una instalación con datos cifrados. `APP_ENV=production`, `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true` y `SESSION_ENCRYPT=true` son obligatorios.
+
+El archivo `compose.prod.yaml` usa PHP-FPM, Nginx, un worker de cola, un programador y volúmenes persistentes para SQLite, archivos cargados y respaldos. Nginx escucha únicamente en `127.0.0.1:8081`; instalá un proxy HTTPS delante con certificado válido, cabeceras `X-Forwarded-*` y vigilancia de `/up`. Abrí al público solamente el proxy HTTPS. La configuración local `compose.yaml` sigue separada.
+
+Antes del primer arranque, prepará el archivo de entorno. Ejecutá `docker compose -f compose.prod.yaml build`, `docker compose -f compose.prod.yaml up -d`, y después `docker compose -f compose.prod.yaml exec app sh -c 'touch /app/bd/database.sqlite && php artisan migrate --force'`. Para instalaciones existentes, respaldá el volumen SQLite antes de migrar. No uses `migrate:fresh`. Configurá SMTP (`MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`) para recuperación de cuentas.
+
+El programador marca sesiones expiradas y ejecuta `app:backup-sqlite` cada día a las 02:00. Los respaldos consistentes se guardan en el volumen `backups`. Copiá ese volumen regularmente a almacenamiento externo cifrado y probá una restauración en un entorno aislado. El comando no elimina respaldos anteriores. Los errores van a stderr y se consultan con `docker compose -f compose.prod.yaml logs`; conectá el colector de logs y alertas de tu infraestructura. Vigilá el endpoint `/up` y el estado de los contenedores.
+
+Para Firebase Cloud Messaging, creá un proyecto Firebase, habilitá FCM HTTP v1 y guardá el JSON de cuenta de servicio fuera del repositorio. Definí `FCM_PROJECT_ID` y `GOOGLE_APPLICATION_CREDENTIALS` con la ruta del JSON dentro del contenedor worker; agregá un montaje de solo lectura para ese archivo en un override privado de Compose. Sin esas variables, el centro de notificaciones funciona y el envío push queda inactivo. La app móvil debe enviar su token FCM a `PUT /api/device/push-token` después del login. La aprobación de acceso ocurre en el panel; ninguna notificación push es requisito para iniciar sesión.
+
+Para publicar faltan: servidor, dominio, certificado TLS, valores secretos de `.env.production`, credenciales SMTP, proyecto y credenciales FCM si se desea push, destino externo para respaldos y monitoreo. No hay despliegue realizado por este repositorio.

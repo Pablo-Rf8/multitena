@@ -1,0 +1,40 @@
+name: multitena-prod
+services:
+  app:
+    build: { context: ., dockerfile: Dockerfile.prod, target: app }
+    env_file: backend/.env.production
+    environment:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/bd/database.sqlite
+      BACKUP_DIRECTORY: /app/backups
+    volumes: [app_data:/app/bd, backups:/app/backups, app_storage:/app/backend/storage]
+    restart: unless-stopped
+  web:
+    build: { context: ., dockerfile: Dockerfile.prod, target: web }
+    ports: ["127.0.0.1:8081:80"]
+    depends_on: [app]
+    restart: unless-stopped
+  worker:
+    build: { context: ., dockerfile: Dockerfile.prod, target: app }
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    env_file: backend/.env.production
+    environment:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/bd/database.sqlite
+      BACKUP_DIRECTORY: /app/backups
+    volumes: [app_data:/app/bd, backups:/app/backups, app_storage:/app/backend/storage]
+    restart: unless-stopped
+  scheduler:
+    build: { context: ., dockerfile: Dockerfile.prod, target: app }
+    command: php artisan schedule:work
+    env_file: backend/.env.production
+    environment:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/bd/database.sqlite
+      BACKUP_DIRECTORY: /app/backups
+    volumes: [app_data:/app/bd, backups:/app/backups, app_storage:/app/backend/storage]
+    restart: unless-stopped
+volumes:
+  app_data:
+  backups:
+  app_storage:

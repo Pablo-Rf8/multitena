@@ -1,6 +1,7 @@
 .git
 bd/*.sqlite*
 backend/.env
+backend/.env.production
 backend/vendor
 backend/node_modules
 backend/database/*.sqlite*
