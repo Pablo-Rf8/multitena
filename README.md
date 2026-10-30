@@ -10,7 +10,7 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **CRM:** fichas de contacto, estados, organizaciones, origen, notas con autor y fecha, oportunidades con etapa, monto y cierre estimado; búsqueda, filtros, paginación y exportación CSV.
 - **Acceso:** inicio y cierre de sesión, límite de intentos, cambio y recuperación de contraseña, bloqueo inmediato de cuentas y empresas suspendidas. La sucursal Central no se puede suspender ni renombrar; una empresa debe conservar al menos un administrador activo.
 - **Datos:** migraciones aditivas, SQLite persistente, datos DEMO etiquetados y registro de cambios. La desactivación conserva los registros para consulta y reactivación.
-- **Personal:** el superadministrador registra empleados individuales o importa un CSV (`name,email,password`, máximo 1000 filas). Quedan pendientes hasta que el administrador de su empresa los apruebe o rechace. Cada empresa configura categorías, permisos de lectura y escritura del CRM, dominios de correo y acceso móvil.
+- **Personal:** el superadministrador registra empleados individuales con teléfono opcional o importa un CSV (`name,email,password`, máximo 1000 filas). Quedan pendientes hasta que el administrador de su empresa los apruebe o rechace. Cada empresa configura categorías, permisos de lectura y escritura del CRM, dominios de correo y acceso móvil.
 - **API móvil:** Laravel Sanctum emite tokens por sesión y dispositivo con vencimiento. La empresa puede exigir aprobación de dispositivos nuevos, consultar sus sesiones y revocar dispositivos. Las notificaciones se consultan en web y API; con Firebase configurado se envían por cola a dispositivos registrados.
 - **Personal y sesiones:** el administrador de empresa registra, revisa, edita y suspende empleados; edita permisos de categorías y consulta o revoca sesiones web y móviles. Los eventos de acceso se muestran en el centro de notificaciones.
 - **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El login muestra la marca al seleccionar el código de empresa y el panel usa la empresa autenticada. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
@@ -26,7 +26,13 @@ En el login web, el usuario introduce primero el **código de empresa** y luego 
 
 Ejecutá `php artisan schedule:work` o programá `php artisan schedule:run` para que las sesiones vencidas se marquen como expiradas. La API rechaza tokens vencidos incluso si el programador todavía no corrió. La revocación del dispositivo invalida sus tokens inmediatamente.
 
-La configuración de producción y las variables requeridas están en [docs/PRODUCCION.md](docs/PRODUCCION.md). No hay despliegue activo.
+La configuración de producción y las variables requeridas están en [docs/PRODUCCION.md](docs/PRODUCCION.md). La demostración está publicada en `https://multitena.vercel.app` con Laravel en Railway.
+
+## Códigos de empresa y teléfonos
+
+El código se genera al crear la empresa. El superadministrador lo ve en **Empresas → Ver detalle**; el administrador de empresa lo ve en su panel. Se usa en el primer paso del login web y en `POST /api/login`. No reemplaza la contraseña.
+
+El superadministrador puede agregar el teléfono de la empresa en **Empresas → Editar**. El administrador de empresa agrega teléfonos de sucursales en **Sucursales** y de contactos en **CRM → Contactos**. El teléfono del empleado se puede cargar al registrarlo o editarlo en **Personal y acceso**; es opcional y no se usa como credencial.
 
 ## Requisitos y estructura
 

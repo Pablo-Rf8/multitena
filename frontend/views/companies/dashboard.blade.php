@@ -7,7 +7,7 @@
     <p class="eyebrow">{{ $isCompanyAdmin ? 'Administración de empresa' : 'Administración de sucursal' }}</p>
     <h1>{{ $company->name }} @if ($company->is_demo) <span class="tag">DEMO</span> @endif</h1>
     <p class="intro">Tu sucursal asignada es {{ $branch->name }}.</p>
-    @if ($isCompanyAdmin)<p class="intro">Código para acceso móvil: <strong>{{ $company->code }}</strong></p>@endif
+    @if ($isCompanyAdmin)<p class="intro">Código de empresa para iniciar sesión en la web o la app móvil: <strong>{{ $company->code }}</strong></p>@endif
     <div class="stats">
         <a class="stat stat-link" href="{{ route('contacts.index') }}"><strong>{{ $contactCount }}</strong><span>Contactos</span></a>
         <a class="stat stat-link" href="{{ route('opportunities.index') }}"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></a>

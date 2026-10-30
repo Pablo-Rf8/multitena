@@ -30,11 +30,12 @@ class WorkforceTest extends TestCase
         $coca = app(CreateCompany::class)->handle('Coca Cola', 'admin@coca.test', 'strong-password-123');
         $super = User::factory()->create(['role' => 'super_admin', 'company_id' => null, 'branch_id' => null]);
         $this->actingAs($super)->post('/employees', [
-            'company_id' => $pepsi->id, 'name' => 'Eva', 'email' => 'eva@pepsi.test',
+            'company_id' => $pepsi->id, 'name' => 'Eva', 'email' => 'eva@pepsi.test', 'phone' => '36117795',
             'password' => 'employee-password-123', 'password_confirmation' => 'employee-password-123',
         ])->assertRedirect();
         $employee = User::where('email', 'eva@pepsi.test')->firstOrFail();
         $this->assertSame('pending', $employee->approval_status);
+        $this->assertSame('36117795', $employee->phone);
         $this->post('/logout');
         $this->post('/login/company', ['company_code' => $pepsi->code])->assertRedirect('/login');
         $this->post('/login', ['email' => $employee->email, 'password' => 'employee-password-123'])->assertSessionHasErrors();
@@ -98,9 +99,12 @@ class WorkforceTest extends TestCase
         $category = Category::where('company_id', $pepsi->id)->firstOrFail();
         $this->actingAs($cocaAdmin)->put('/workforce/categories/'.$category->id, ['name' => 'Intruso', 'is_active' => 0])->assertNotFound();
         $this->actingAs($pepsiAdmin)->put('/workforce/categories/'.$category->id, ['name' => 'Supervisor', 'is_active' => 1, 'permissions' => ['contacts.read', 'contacts.write']])->assertRedirect();
-        $this->actingAs($pepsiAdmin)->post('/workforce/employees', ['name' => 'Eva', 'email' => 'eva@pepsi.test', 'password' => 'employee-password-123', 'password_confirmation' => 'employee-password-123', 'branch_id' => $pepsiAdmin->branch_id])->assertRedirect();
+        $this->actingAs($pepsiAdmin)->post('/workforce/employees', ['name' => 'Eva', 'email' => 'eva@pepsi.test', 'phone' => '36117795', 'password' => 'employee-password-123', 'password_confirmation' => 'employee-password-123', 'branch_id' => $pepsiAdmin->branch_id])->assertRedirect();
         $employee = User::where('email', 'eva@pepsi.test')->firstOrFail();
+        $this->assertSame('36117795', $employee->phone);
         $this->actingAs($cocaAdmin)->get('/workforce/employees/'.$employee->id.'/edit')->assertNotFound();
+        $this->actingAs($pepsiAdmin)->put('/workforce/employees/'.$employee->id, ['name' => 'Eva', 'email' => 'eva@pepsi.test', 'phone' => '36117796', 'branch_id' => $pepsiAdmin->branch_id, 'is_active' => 1])->assertRedirect();
+        $this->assertSame('36117796', $employee->fresh()->phone);
         $this->actingAs($pepsiAdmin)->patch('/workforce/employees/'.$employee->id, ['decision' => 'approved', 'category_id' => $category->id])->assertRedirect();
         $this->actingAs($pepsiAdmin)->patch('/workforce/employees/'.$employee->id.'/status', ['is_active' => 0])->assertRedirect();
         $this->assertFalse($employee->fresh()->is_active);

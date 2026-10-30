@@ -5,7 +5,7 @@
 @if ($errors->any()) <div class="notice notice-error">{{ $errors->first() }}</div> @endif
 <section class="panel"><h2>Empleados</h2><p><a class="button" href="{{ route('workforce.employees.create') }}">Registrar empleado</a></p>
 <div class="workforce-list">@forelse($employees as $employee)
-<article class="workforce-item"><strong>{{ $employee->name }}</strong> · {{ $employee->email }} <span class="tag">{{ ['pending' => 'Pendiente', 'approved' => 'Aprobado', 'rejected' => 'Rechazado'][$employee->approval_status] ?? $employee->approval_status }}</span><span class="muted">{{ $employee->category?->name ?? 'Sin categoría' }}</span>
+<article class="workforce-item"><strong>{{ $employee->name }}</strong> · {{ $employee->email }} @if($employee->phone)· {{ $employee->phone }}@endif <span class="tag">{{ ['pending' => 'Pendiente', 'approved' => 'Aprobado', 'rejected' => 'Rechazado'][$employee->approval_status] ?? $employee->approval_status }}</span><span class="muted">{{ $employee->category?->name ?? 'Sin categoría' }}</span>
 <a href="{{ route('workforce.employees.edit', $employee) }}">Editar</a>
 <form method="post" action="{{ route('workforce.employees.status', $employee) }}">@csrf @method('PATCH')<button name="is_active" value="{{ $employee->is_active ? 0 : 1 }}">{{ $employee->is_active ? 'Suspender' : 'Reactivar' }}</button></form>
 @if($employee->approval_status === 'pending')

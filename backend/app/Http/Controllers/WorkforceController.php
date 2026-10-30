@@ -44,11 +44,12 @@ class WorkforceController extends Controller
         $company = $request->user()->company;
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:255', Rule::unique('users')],
+            'phone' => ['nullable', 'string', 'max:40'],
             'password' => ['required', 'string', 'min:12', 'confirmed'],
             'branch_id' => ['required', Rule::exists('branches', 'id')->where('company_id', $company->id)->where('is_active', true)],
         ]);
         if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $company->id])->email_domains ?? [])) return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
-        $employee = $this->createEmployee($company, $data['name'], $data['email'], $data['password']);
+        $employee = $this->createEmployee($company, $data['name'], $data['email'], $data['password'], $data['phone'] ?? null);
         $employee->update(['branch_id' => $data['branch_id']]);
         return redirect()->route('workforce.index')->with('status', 'Empleado pendiente de aprobación.');
     }
@@ -61,6 +62,7 @@ class WorkforceController extends Controller
             'company_id' => ['required', Rule::exists('companies', 'id')->where('is_active', true)],
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')],
+            'phone' => ['nullable', 'string', 'max:40'],
             'password' => ['required', 'string', 'min:12', 'confirmed'],
         ]);
         $company = Company::findOrFail($data['company_id']);
@@ -68,7 +70,7 @@ class WorkforceController extends Controller
         if (! $this->allowedDomain($data['email'], $settings->email_domains ?? [])) {
             return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
         }
-        $user = $this->createEmployee($company, $data['name'], $data['email'], $data['password']);
+        $user = $this->createEmployee($company, $data['name'], $data['email'], $data['password'], $data['phone'] ?? null);
         return back()->with('status', 'Empleado '.$user->email.' pendiente de aprobación.');
     }
 
@@ -106,12 +108,12 @@ class WorkforceController extends Controller
         return back()->with('status', "$count empleados importados.")->with('import_errors', $errors);
     }
 
-    private function createEmployee(Company $company, string $name, string $email, string $password): User
+    private function createEmployee(Company $company, string $name, string $email, string $password, ?string $phone = null): User
     {
-        return DB::transaction(function () use ($company, $name, $email, $password) {
+        return DB::transaction(function () use ($company, $name, $email, $password, $phone) {
             $user = $company->users()->create([
                 'branch_id' => $company->branches()->where('is_central', true)->firstOrFail()->id,
-                'name' => $name, 'email' => $email, 'password' => $password,
+                'name' => $name, 'email' => $email, 'phone' => $phone, 'password' => $password,
                 'role' => 'employee', 'approval_status' => 'pending',
             ]);
             AccessNotice::admins($company->id, 'employee_pending', $user->id, 'Empleado pendiente de aprobación');
@@ -145,6 +147,7 @@ class WorkforceController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:40'],
             'branch_id' => ['required', Rule::exists('branches', 'id')->where('company_id', $user->company_id)->where('is_active', true)],
             'category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)->where('is_active', true)],
             'is_active' => ['required', 'boolean'],

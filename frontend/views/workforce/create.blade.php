@@ -10,6 +10,7 @@
 <label>Empresa <select name="company_id" required>@foreach($companies as $company)<option value="{{ $company->id }}">{{ $company->name }} ({{ $company->code ?? $company->slug }})</option>@endforeach</select></label>
 <label>Nombre <input name="name" required maxlength="120" value="{{ old('name') }}"></label>
 <label>Correo <input type="email" name="email" required value="{{ old('email') }}"></label>
+<label>Teléfono (opcional) <input type="tel" name="phone" maxlength="40" autocomplete="tel" value="{{ old('phone') }}"></label>
 <label>Contraseña <input type="password" name="password" required minlength="12"></label>
 <label>Confirmar contraseña <input type="password" name="password_confirmation" required minlength="12"></label>
 <button type="submit">Crear empleado</button>
