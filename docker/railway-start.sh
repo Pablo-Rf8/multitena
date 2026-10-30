@@ -18,4 +18,5 @@ chown -R www-data:www-data "$data_dir" /app/backend/storage /app/backend/bootstr
 php artisan migrate --force
 php artisan config:cache
 chown -R www-data:www-data /app/backend/bootstrap/cache
+apache2ctl -t
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/multitena.conf
