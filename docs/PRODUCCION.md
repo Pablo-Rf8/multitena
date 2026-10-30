@@ -11,3 +11,9 @@ El programador marca sesiones expiradas y ejecuta `app:backup-sqlite` cada día 
 Para Firebase Cloud Messaging, creá un proyecto Firebase, habilitá FCM HTTP v1 y guardá el JSON de cuenta de servicio fuera del repositorio. Definí `FCM_PROJECT_ID` y `GOOGLE_APPLICATION_CREDENTIALS` con la ruta del JSON dentro del contenedor worker; agregá un montaje de solo lectura para ese archivo en un override privado de Compose. Sin esas variables, el centro de notificaciones funciona y el envío push queda inactivo. La app móvil debe enviar su token FCM a `PUT /api/device/push-token` después del login. La aprobación de acceso ocurre en el panel; ninguna notificación push es requisito para iniciar sesión.
 
 Para publicar faltan: servidor, dominio, certificado TLS, valores secretos de `.env.production`, credenciales SMTP, proyecto y credenciales FCM si se desea push, destino externo para respaldos y monitoreo. No hay despliegue realizado por este repositorio.
+
+## Railway y Vercel
+
+`railway.json` selecciona `Dockerfile.railway`. El contenedor expone Apache en el puerto 8080 y ejecuta la cola y el programador. Montá un volumen persistente en `/app/bd`; allí se guardan SQLite, la clave de aplicación, los archivos cargados y los respaldos locales. Configurá `APP_ENV=production`, `APP_DEBUG=false`, `DB_CONNECTION=sqlite`, `DB_DATABASE=/app/bd/database.sqlite`, `LOCAL_FILES_ROOT=/app/bd/files`, `BACKUP_DIRECTORY=/app/bd/backups`, `APP_URL` con el dominio HTTPS de Vercel y `SESSION_SECURE_COOKIE=true`. El primer arranque genera una clave en el volumen si no existe. Conservá ese volumen y copiá los respaldos fuera de Railway.
+
+El directorio `vercel/` solo contiene la configuración de proxy. Laravel sigue renderizando HTML en Railway; Vercel ofrece el dominio HTTPS y reenvía las rutas web y API. La URL de destino en `vercel/vercel.json` debe corresponder al dominio público del servicio Railway. No despliegues el código PHP como archivos estáticos de Vercel.
