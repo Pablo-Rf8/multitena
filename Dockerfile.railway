@@ -3,6 +3,8 @@ FROM php:8.4-apache-bookworm
 RUN apt-get update && apt-get install -y --no-install-recommends unzip supervisor libsqlite3-dev \
     && docker-php-ext-install pdo_sqlite \
     && a2enmod rewrite headers \
+    && a2dismod -f mpm_event mpm_worker \
+    && a2enmod -f mpm_prefork \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -17,6 +19,7 @@ COPY docker/railway-start.sh /usr/local/bin/multitena-railway-start
 RUN cp .env.example .env \
     && sed -i 's/\r$//' /usr/local/bin/multitena-railway-start \
     && sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf \
+    && apache2ctl -t \
     && composer dump-autoload --no-dev --optimize \
     && chmod +x /usr/local/bin/multitena-railway-start \
     && mkdir -p /app/bd /app/backend/storage/framework/cache /app/backend/storage/framework/sessions /app/backend/storage/framework/views \

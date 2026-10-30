@@ -17,4 +17,5 @@ mkdir -p "$data_dir/files" "$data_dir/backups"
 chown -R www-data:www-data "$data_dir" /app/backend/storage /app/backend/bootstrap/cache
 php artisan migrate --force
 php artisan config:cache
+chown -R www-data:www-data /app/backend/bootstrap/cache
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/multitena.conf
