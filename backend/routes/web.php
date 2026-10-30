@@ -14,6 +14,7 @@ use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\BrandingController;
+use App\Http\Controllers\AccessNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -40,6 +41,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'active_account'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', [AccessNotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('/notifications/{notification}/read', [AccessNotificationController::class, 'read'])->name('notifications.read');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/account/password', [PasswordController::class, 'update'])->name('password.update');
     Route::get('/branding/logo', [BrandingController::class, 'logo'])->middleware('tenant_user')->name('branding.logo');
@@ -65,7 +68,15 @@ Route::middleware(['auth', 'active_account'])->group(function () {
         Route::get('/branding', [BrandingController::class, 'edit'])->name('branding.edit');
         Route::put('/branding', [BrandingController::class, 'update'])->name('branding.update');
         Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+        Route::get('/workforce/employees/create', [WorkforceController::class, 'createForCompany'])->name('workforce.employees.create');
+        Route::post('/workforce/employees', [WorkforceController::class, 'storeForCompany'])->name('workforce.employees.store');
         Route::post('/workforce/categories', [WorkforceController::class, 'category'])->name('workforce.categories');
+        Route::put('/workforce/categories/{category}', [WorkforceController::class, 'updateCategory'])->name('workforce.categories.update');
+        Route::delete('/workforce/categories/{category}', [WorkforceController::class, 'deleteCategory'])->name('workforce.categories.delete');
+        Route::get('/workforce/employees/{employee}/edit', [WorkforceController::class, 'editEmployee'])->name('workforce.employees.edit');
+        Route::put('/workforce/employees/{employee}', [WorkforceController::class, 'updateEmployee'])->name('workforce.employees.update');
+        Route::patch('/workforce/employees/{employee}/status', [WorkforceController::class, 'employeeStatus'])->name('workforce.employees.status');
+        Route::patch('/workforce/sessions/{session}/end', [WorkforceController::class, 'endSession'])->name('workforce.sessions.end');
         Route::put('/workforce/settings', [WorkforceController::class, 'settings'])->name('workforce.settings');
         Route::patch('/workforce/employees/{employee}', [WorkforceController::class, 'review'])->name('workforce.review');
         Route::patch('/workforce/employees/{employee}/category', [WorkforceController::class, 'assignCategory'])->name('workforce.assign-category');

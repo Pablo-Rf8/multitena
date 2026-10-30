@@ -25,6 +25,7 @@ class EnsureMobileSession
             return response()->json(['message' => 'Sesión expirada.'], 401);
         }
         $request->attributes->set('mobile_session', $session);
+        $session->update(['last_seen_at' => now()]);
         return $next($request);
     }
 }

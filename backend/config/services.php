@@ -2,6 +2,11 @@
 
 return [
 
+    'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID'),
+        'credentials_file' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

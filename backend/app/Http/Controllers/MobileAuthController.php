@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{CompanySetting, Device, MobileSession, User};
+use App\Services\AccessNotice;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,7 @@ class MobileAuthController extends Controller
         );
         if ($device->status !== 'approved') {
             if ($device->wasRecentlyCreated) {
-                DB::table('access_notifications')->insert(['company_id' => $user->company_id, 'kind' => 'device_pending', 'subject_id' => $device->id, 'created_at' => now(), 'updated_at' => now()]);
+                AccessNotice::admins($user->company_id, 'device_pending', $device->id, 'Dispositivo pendiente de aprobación');
             }
             return response()->json(['message' => 'Dispositivo pendiente de aprobación.'], 403);
         }
@@ -39,7 +40,7 @@ class MobileAuthController extends Controller
         $token = $user->createToken('mobile:'.$user->company_id.':'.$device->id, ['mobile'], $expires);
         MobileSession::create([
             'company_id' => $user->company_id, 'user_id' => $user->id, 'device_id' => $device->id,
-            'token_id' => $token->accessToken->id, 'started_at' => now(), 'expires_at' => $expires,
+            'token_id' => $token->accessToken->id, 'channel' => 'mobile', 'started_at' => now(), 'last_seen_at' => now(), 'expires_at' => $expires,
         ]);
         $device->update(['last_seen_at' => now()]);
         return response()->json(['token' => $token->plainTextToken, 'token_type' => 'Bearer', 'expires_at' => $expires->toIso8601String(), 'user' => ['id' => $user->id, 'name' => $user->name, 'role' => $user->role, 'company_id' => $user->company_id]]);
@@ -56,5 +57,13 @@ class MobileAuthController extends Controller
         $session->update(['status' => 'closed', 'ended_at' => now(), 'end_reason' => 'logout']);
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Sesión cerrada.']);
+    }
+
+    public function registerPush(Request $request): JsonResponse
+    {
+        $data = $request->validate(['push_token' => ['required', 'string', 'max:4096']]);
+        $session = $request->attributes->get('mobile_session');
+        $session->device->update(['push_token' => $data['push_token']]);
+        return response()->json(['message' => 'Dispositivo actualizado.']);
     }
 }

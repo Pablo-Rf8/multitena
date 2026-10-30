@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\CompanySetting;
+use App\Models\MobileSession;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,6 +81,8 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
         $request->session()->forget(['login_mode', 'login_company_id']);
+        $accessSession = MobileSession::create(['company_id' => $user->company_id, 'user_id' => $user->id, 'channel' => 'web', 'web_session_hash' => hash_hmac('sha256', $request->session()->getId().':'.$user->id, config('app.key')), 'started_at' => now(), 'last_seen_at' => now(), 'expires_at' => now()->addMinutes(config('session.lifetime'))]);
+        $request->session()->put('access_session_id', $accessSession->id);
         $user->forceFill(['last_login_at' => now()])->save();
 
         return redirect()->intended(route('dashboard'));
@@ -88,6 +91,7 @@ class AuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         $companyId = $request->user()?->company_id;
+        MobileSession::where('id', $request->session()->get('access_session_id'))->where('status', 'active')->update(['status' => 'closed', 'ended_at' => now(), 'end_reason' => 'logout']);
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

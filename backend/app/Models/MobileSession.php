@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MobileSession extends Model
 {
-    protected $fillable = ['company_id', 'user_id', 'device_id', 'token_id', 'started_at', 'ended_at', 'expires_at', 'status', 'end_reason'];
+    protected $fillable = ['company_id', 'user_id', 'device_id', 'token_id', 'channel', 'web_session_hash', 'started_at', 'last_seen_at', 'ended_at', 'expires_at', 'status', 'end_reason'];
 
     public function device(): BelongsTo
     {
@@ -21,6 +21,6 @@ class MobileSession extends Model
 
     protected function casts(): array
     {
-        return ['started_at' => 'datetime', 'ended_at' => 'datetime', 'expires_at' => 'datetime'];
+        return ['started_at' => 'datetime', 'last_seen_at' => 'datetime', 'ended_at' => 'datetime', 'expires_at' => 'datetime'];
     }
 }

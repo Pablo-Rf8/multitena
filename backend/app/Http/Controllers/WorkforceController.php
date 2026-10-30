@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Category, Company, CompanySetting, Device, MobileSession, User};
+use App\Services\AccessNotice;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,10 +19,11 @@ class WorkforceController extends Controller
         return view('workforce.index', [
             'employees' => User::where('company_id', $id)->where('role', 'employee')->with('category')->latest()->paginate(20),
             'categories' => Category::where('company_id', $id)->orderBy('name')->get(),
+            'branches' => $request->user()->company->branches()->orderBy('name')->get(),
             'devices' => Device::where('company_id', $id)->latest()->limit(50)->get(),
-            'sessions' => MobileSession::where('company_id', $id)->whereHas('user', fn ($query) => $query->where('role', 'employee'))->with('user')->latest()->limit(50)->get(),
+            'sessions' => MobileSession::where('company_id', $id)->with(['user', 'device'])->latest()->limit(50)->get(),
             'settings' => CompanySetting::firstOrCreate(['company_id' => $id]),
-            'notifications' => DB::table('access_notifications')->where('company_id', $id)->whereNull('read_at')->latest()->limit(20)->get(),
+            'notifications' => DB::table('access_notifications')->where('company_id', $id)->where('recipient_id', $request->user()->id)->whereNull('read_at')->latest()->limit(20)->get(),
         ]);
     }
 
@@ -29,6 +31,26 @@ class WorkforceController extends Controller
     {
         abort_unless($request->user()->role === 'super_admin', 403);
         return view('workforce.create', ['companies' => Company::orderBy('name')->get()]);
+    }
+
+    public function createForCompany(Request $request): View
+    {
+        return view('workforce.register', ['branches' => $request->user()->company->branches()->where('is_active', true)->orderBy('name')->get()]);
+    }
+
+    public function storeForCompany(Request $request): RedirectResponse
+    {
+        $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
+        $company = $request->user()->company;
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:255', Rule::unique('users')],
+            'password' => ['required', 'string', 'min:12', 'confirmed'],
+            'branch_id' => ['required', Rule::exists('branches', 'id')->where('company_id', $company->id)->where('is_active', true)],
+        ]);
+        if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $company->id])->email_domains ?? [])) return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
+        $employee = $this->createEmployee($company, $data['name'], $data['email'], $data['password']);
+        $employee->update(['branch_id' => $data['branch_id']]);
+        return redirect()->route('workforce.index')->with('status', 'Empleado pendiente de aprobación.');
     }
 
     public function store(Request $request): RedirectResponse
@@ -92,7 +114,7 @@ class WorkforceController extends Controller
                 'name' => $name, 'email' => $email, 'password' => $password,
                 'role' => 'employee', 'approval_status' => 'pending',
             ]);
-            DB::table('access_notifications')->insert(['company_id' => $company->id, 'kind' => 'employee_pending', 'subject_id' => $user->id, 'created_at' => now(), 'updated_at' => now()]);
+            AccessNotice::admins($company->id, 'employee_pending', $user->id, 'Empleado pendiente de aprobación');
             return $user;
         });
     }
@@ -102,25 +124,87 @@ class WorkforceController extends Controller
         $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
         $data = $request->validate([
             'decision' => ['required', Rule::in(['approved', 'rejected'])],
-            'category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)],
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)->where('is_active', true)],
         ]);
         abort_unless($user->approval_status === 'pending', 409);
         $user->update(['approval_status' => $data['decision'], 'category_id' => $data['category_id'] ?? null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
         DB::table('access_notifications')->where('company_id', $user->company_id)->where('kind', 'employee_pending')->where('subject_id', $user->id)->update(['read_at' => now()]);
+        AccessNotice::user($user, 'employee_'.$data['decision'], $user->id, 'Solicitud '.($data['decision'] === 'approved' ? 'aprobada' : 'rechazada'));
         return back()->with('status', 'Solicitud revisada.');
+    }
+
+    public function editEmployee(Request $request, int $employee): View
+    {
+        $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
+        return view('workforce.employee', ['employee' => $user, 'categories' => Category::where('company_id', $user->company_id)->where('is_active', true)->orderBy('name')->get(), 'branches' => $request->user()->company->branches()->where('is_active', true)->orderBy('name')->get()]);
+    }
+
+    public function updateEmployee(Request $request, int $employee): RedirectResponse
+    {
+        $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'branch_id' => ['required', Rule::exists('branches', 'id')->where('company_id', $user->company_id)->where('is_active', true)],
+            'category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)->where('is_active', true)],
+            'is_active' => ['required', 'boolean'],
+        ]);
+        $data['email'] = strtolower(trim($data['email']));
+        if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $user->company_id])->email_domains ?? [])) {
+            return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
+        }
+        $user->update($data);
+        if (! $user->is_active) $this->revokeEmployeeSessions($user, 'account_suspended');
+        return redirect()->route('workforce.index')->with('status', 'Empleado actualizado.');
+    }
+
+    public function employeeStatus(Request $request, int $employee): RedirectResponse
+    {
+        $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
+        $data = $request->validate(['is_active' => ['required', 'boolean']]);
+        $user->update($data);
+        if (! $user->is_active) $this->revokeEmployeeSessions($user, 'account_suspended');
+        return back()->with('status', 'Estado del empleado actualizado.');
+    }
+
+    private function revokeEmployeeSessions(User $user, string $reason): void
+    {
+        foreach (MobileSession::where('user_id', $user->id)->where('status', 'active')->get() as $session) {
+            if ($session->token_id) DB::table('personal_access_tokens')->where('id', $session->token_id)->delete();
+            $session->update(['status' => 'revoked', 'end_reason' => $reason, 'ended_at' => now()]);
+        }
     }
 
     public function category(Request $request): RedirectResponse
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:100'], 'permissions' => ['array'], 'permissions.*' => [Rule::in(self::PERMISSIONS)]]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100', Rule::unique('categories')->where('company_id', $request->user()->company_id)], 'permissions' => ['array'], 'permissions.*' => [Rule::in(self::PERMISSIONS)]]);
         Category::create(['company_id' => $request->user()->company_id, 'name' => $data['name'], 'permissions' => $data['permissions'] ?? []]);
         return back()->with('status', 'Categoría creada.');
+    }
+
+    public function updateCategory(Request $request, int $category): RedirectResponse
+    {
+        $category = Category::where('company_id', $request->user()->company_id)->findOrFail($category);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100', Rule::unique('categories')->where('company_id', $category->company_id)->ignore($category->id)], 'permissions' => ['array'], 'permissions.*' => [Rule::in(self::PERMISSIONS)], 'is_active' => ['required', 'boolean']]);
+        $category->update(['name' => $data['name'], 'permissions' => $data['permissions'] ?? [], 'is_active' => $data['is_active']]);
+        if (! $category->is_active) {
+            foreach (User::where('category_id', $category->id)->get() as $user) $this->revokeEmployeeSessions($user, 'category_disabled');
+        }
+        return back()->with('status', 'Categoría actualizada.');
+    }
+
+    public function deleteCategory(Request $request, int $category): RedirectResponse
+    {
+        $category = Category::where('company_id', $request->user()->company_id)->findOrFail($category);
+        abort_if(User::where('category_id', $category->id)->exists(), 409, 'Desasigná los empleados antes de eliminar la categoría.');
+        $category->delete();
+        return back()->with('status', 'Categoría eliminada.');
     }
 
     public function assignCategory(Request $request, int $employee): RedirectResponse
     {
         $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
-        $data = $request->validate(['category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)]]);
+        $data = $request->validate(['category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)->where('is_active', true)]]);
         $user->update(['category_id' => $data['category_id'] ?? null]);
         return back()->with('status', 'Categoría actualizada.');
     }
@@ -160,7 +244,17 @@ class WorkforceController extends Controller
                 $session->update(['status' => 'revoked', 'end_reason' => 'device_revoked', 'ended_at' => now()]);
             }
         }
+        AccessNotice::user(User::findOrFail($device->user_id), 'device_'.$data['status'], $device->id, 'Dispositivo '.($data['status'] === 'approved' ? 'autorizado' : 'revocado'));
         return back()->with('status', 'Dispositivo actualizado.');
+    }
+
+    public function endSession(Request $request, int $session): RedirectResponse
+    {
+        $session = MobileSession::where('company_id', $request->user()->company_id)->findOrFail($session);
+        abort_unless($session->status === 'active', 409);
+        if ($session->token_id) DB::table('personal_access_tokens')->where('id', $session->token_id)->delete();
+        $session->update(['status' => 'revoked', 'end_reason' => 'admin_revoked', 'ended_at' => now()]);
+        return back()->with('status', 'Sesión finalizada.');
     }
 
     private function allowedDomain(string $email, array $domains): bool

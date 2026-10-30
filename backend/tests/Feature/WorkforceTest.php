@@ -87,4 +87,61 @@ class WorkforceTest extends TestCase
         $this->assertDatabaseHas('mobile_sessions', ['company_id' => $company->id, 'status' => 'closed', 'end_reason' => 'logout']);
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
+
+    public function test_company_admin_can_manage_own_employees_and_categories_only(): void
+    {
+        $pepsi = app(CreateCompany::class)->handle('Pepsi', 'admin@pepsi.test', 'strong-password-123');
+        $coca = app(CreateCompany::class)->handle('Coca Cola', 'admin@coca.test', 'strong-password-123');
+        $pepsiAdmin = $pepsi->users()->firstOrFail();
+        $cocaAdmin = $coca->users()->firstOrFail();
+        $this->actingAs($pepsiAdmin)->post('/workforce/categories', ['name' => 'Supervisor', 'permissions' => ['contacts.read']])->assertRedirect();
+        $category = Category::where('company_id', $pepsi->id)->firstOrFail();
+        $this->actingAs($cocaAdmin)->put('/workforce/categories/'.$category->id, ['name' => 'Intruso', 'is_active' => 0])->assertNotFound();
+        $this->actingAs($pepsiAdmin)->put('/workforce/categories/'.$category->id, ['name' => 'Supervisor', 'is_active' => 1, 'permissions' => ['contacts.read', 'contacts.write']])->assertRedirect();
+        $this->actingAs($pepsiAdmin)->post('/workforce/employees', ['name' => 'Eva', 'email' => 'eva@pepsi.test', 'password' => 'employee-password-123', 'password_confirmation' => 'employee-password-123', 'branch_id' => $pepsiAdmin->branch_id])->assertRedirect();
+        $employee = User::where('email', 'eva@pepsi.test')->firstOrFail();
+        $this->actingAs($cocaAdmin)->get('/workforce/employees/'.$employee->id.'/edit')->assertNotFound();
+        $this->actingAs($pepsiAdmin)->patch('/workforce/employees/'.$employee->id, ['decision' => 'approved', 'category_id' => $category->id])->assertRedirect();
+        $this->actingAs($pepsiAdmin)->patch('/workforce/employees/'.$employee->id.'/status', ['is_active' => 0])->assertRedirect();
+        $this->assertFalse($employee->fresh()->is_active);
+        $this->actingAs($pepsiAdmin)->delete('/workforce/categories/'.$category->id)->assertStatus(409);
+    }
+
+    public function test_web_session_is_recorded_and_admin_can_revoke_it(): void
+    {
+        $company = app(CreateCompany::class)->handle('Pepsi', 'admin@pepsi.test', 'strong-password-123');
+        $this->post('/login/company', ['company_code' => $company->code]);
+        $this->post('/login', ['email' => 'admin@pepsi.test', 'password' => 'strong-password-123'])->assertRedirect();
+        $session = \App\Models\MobileSession::where('channel', 'web')->where('company_id', $company->id)->firstOrFail();
+        $this->assertNotNull($session->last_seen_at);
+        $this->patch('/workforce/sessions/'.$session->id.'/end')->assertRedirect();
+        $this->assertSame('admin_revoked', $session->fresh()->end_reason);
+        $this->get('/dashboard')->assertRedirect('/login');
+    }
+
+    public function test_notification_center_is_private_to_recipient_and_company(): void
+    {
+        $pepsi = app(CreateCompany::class)->handle('Pepsi', 'admin@pepsi.test', 'strong-password-123');
+        $coca = app(CreateCompany::class)->handle('Coca Cola', 'admin@coca.test', 'strong-password-123');
+        $pepsiAdmin = $pepsi->users()->firstOrFail();
+        $cocaAdmin = $coca->users()->firstOrFail();
+        \App\Services\AccessNotice::user($pepsiAdmin, 'employee_pending', 123, 'Empleado Pepsi');
+        $notice = \Illuminate\Support\Facades\DB::table('access_notifications')->first();
+        $this->actingAs($cocaAdmin)->get('/notifications')->assertOk()->assertDontSee('Empleado Pepsi');
+        $this->actingAs($cocaAdmin)->patch('/notifications/'.$notice->id.'/read')->assertNotFound();
+        $this->actingAs($pepsiAdmin)->get('/notifications')->assertOk()->assertSee('Empleado Pepsi');
+        $this->actingAs($pepsiAdmin)->patch('/notifications/'.$notice->id.'/read')->assertRedirect();
+    }
+
+    public function test_mobile_device_can_register_encrypted_push_token_and_read_own_notices(): void
+    {
+        $company = app(CreateCompany::class)->handle('Pepsi', 'admin@pepsi.test', 'strong-password-123');
+        $token = $this->postJson('/api/login', ['email' => 'admin@pepsi.test', 'password' => 'strong-password-123', 'company_code' => $company->code, 'device_id' => 'device-admin-123', 'device_name' => 'Admin phone'])->assertOk()->json('token');
+        $this->withToken($token)->putJson('/api/device/push-token', ['push_token' => 'example-fcm-token-for-tests'])->assertOk();
+        $device = $company->users()->firstOrFail()->devices()->firstOrFail();
+        $this->assertSame('example-fcm-token-for-tests', $device->fresh()->push_token);
+        $this->assertNotSame('example-fcm-token-for-tests', \Illuminate\Support\Facades\DB::table('devices')->where('id', $device->id)->value('push_token'));
+        \App\Services\AccessNotice::user($company->users()->firstOrFail(), 'device_approved', $device->id, 'Dispositivo autorizado');
+        $this->withToken($token)->getJson('/api/notifications')->assertOk()->assertSee('Dispositivo autorizado');
+    }
 }

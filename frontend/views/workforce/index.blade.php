@@ -3,9 +3,11 @@
 @section('content')
 <section class="page-heading"><p class="eyebrow">Administración</p><h1>Personal y acceso</h1><p class="intro">Solicitudes, categorías, dispositivos y seguridad de tu empresa.</p></section>
 @if ($errors->any()) <div class="notice notice-error">{{ $errors->first() }}</div> @endif
-<section class="panel"><h2>Empleados</h2>
+<section class="panel"><h2>Empleados</h2><p><a class="button" href="{{ route('workforce.employees.create') }}">Registrar empleado</a></p>
 <div class="workforce-list">@forelse($employees as $employee)
 <article class="workforce-item"><strong>{{ $employee->name }}</strong> · {{ $employee->email }} <span class="tag">{{ ['pending' => 'Pendiente', 'approved' => 'Aprobado', 'rejected' => 'Rechazado'][$employee->approval_status] ?? $employee->approval_status }}</span><span class="muted">{{ $employee->category?->name ?? 'Sin categoría' }}</span>
+<a href="{{ route('workforce.employees.edit', $employee) }}">Editar</a>
+<form method="post" action="{{ route('workforce.employees.status', $employee) }}">@csrf @method('PATCH')<button name="is_active" value="{{ $employee->is_active ? 0 : 1 }}">{{ $employee->is_active ? 'Suspender' : 'Reactivar' }}</button></form>
 @if($employee->approval_status === 'pending')
 <form method="post" action="{{ route('workforce.review', $employee) }}">@csrf @method('PATCH')
 <label>Categoría <select name="category_id"><option value="">Sin categoría</option>@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></label>
@@ -20,7 +22,11 @@
 </section>
 <div class="workforce-grid">
 <section class="panel"><h2>Categorías y permisos</h2>
-@forelse($categories as $category)<p class="workforce-item"><strong>{{ $category->name }}</strong><br><span class="muted">{{ implode(', ', $category->permissions ?? []) ?: 'Sin permisos de CRM' }}</span></p>@empty <p class="empty-state">Creá una categoría para asignar permisos a empleados.</p> @endforelse
+@forelse($categories as $category)<div class="workforce-item"><form method="post" action="{{ route('workforce.categories.update', $category) }}">@csrf @method('PUT')
+<label>Nombre <input name="name" value="{{ $category->name }}" required maxlength="100"></label>
+@foreach(['contacts.read', 'contacts.write', 'opportunities.read', 'opportunities.write'] as $permission)<label><input type="checkbox" name="permissions[]" value="{{ $permission }}" @checked(in_array($permission, $category->permissions ?? [], true))> {{ $permission }}</label>@endforeach
+<label>Estado <select name="is_active"><option value="1" @selected($category->is_active)>Activa</option><option value="0" @selected(!$category->is_active)>Desactivada</option></select></label><button>Guardar cambios</button></form>
+<form method="post" action="{{ route('workforce.categories.delete', $category) }}" onsubmit="return confirm('¿Eliminar esta categoría? Solo se puede eliminar si no tiene empleados asignados.')">@csrf @method('DELETE')<button>Eliminar</button></form></div>@empty <p class="empty-state">Creá una categoría para asignar permisos a empleados.</p> @endforelse
 <form method="post" action="{{ route('workforce.categories') }}">@csrf
 <label>Nombre <input name="name" required maxlength="100" placeholder="Repartidor"></label>
 @foreach(['contacts.read', 'contacts.write', 'opportunities.read', 'opportunities.write'] as $permission)
@@ -43,8 +49,9 @@
 @if($device->status === 'pending')<button name="status" value="approved">Autorizar</button>@endif
 <button name="status" value="revoked">Revocar</button></form>@endif</p>
 @empty <p class="empty-state">Aún no hay dispositivos registrados.</p> @endforelse</section>
-<section class="panel"><h2>Sesiones móviles</h2>
-@forelse($sessions as $mobileSession)<p>{{ $mobileSession->user->name }} · Dispositivo #{{ $mobileSession->device_id }} · Inicio: {{ $mobileSession->started_at }} · Estado: {{ $mobileSession->status }} · Motivo: {{ $mobileSession->end_reason ?? '—' }}</p>
-@empty <p class="empty-state">Aún no hay sesiones móviles.</p> @endforelse</section>
+<section class="panel"><h2>Sesiones web y móviles</h2>
+@forelse($sessions as $accessSession)<div class="workforce-item">{{ $accessSession->user?->name ?? 'Usuario eliminado' }} · {{ $accessSession->channel === 'web' ? 'Web' : ($accessSession->device?->name ?? 'Móvil') }} · Inicio: {{ $accessSession->started_at }} · Último acceso: {{ $accessSession->last_seen_at ?? '—' }} · Estado: {{ $accessSession->status }} · Motivo: {{ $accessSession->end_reason ?? '—' }}
+@if($accessSession->status === 'active')<form method="post" action="{{ route('workforce.sessions.end', $accessSession) }}">@csrf @method('PATCH')<button>Finalizar sesión</button></form>@endif</div>
+@empty <p class="empty-state">Aún no hay sesiones.</p> @endforelse</section>
 </div>
 @endsection

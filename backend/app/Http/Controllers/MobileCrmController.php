@@ -10,7 +10,7 @@ class MobileCrmController extends Controller
     private function permit(Request $request, string $permission): void
     {
         $user = $request->user();
-        abort_if($user->role === 'super_admin' || ($user->role === 'employee' && ! in_array($permission, $user->category?->permissions ?? [], true)), 403);
+        abort_if($user->role === 'super_admin' || ($user->role === 'employee' && (! $user->category?->is_active || ! in_array($permission, $user->category?->permissions ?? [], true))), 403);
     }
 
     public function contacts(Request $request)

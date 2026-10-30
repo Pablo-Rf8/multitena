@@ -1,11 +1,12 @@
 @php
-    $permissions = $viewer->role === 'employee' ? ($viewer->category?->permissions ?? []) : [];
+    $permissions = $viewer->role === 'employee' && $viewer->category?->is_active ? ($viewer->category->permissions ?? []) : [];
     $canContacts = $viewer->role !== 'employee' || in_array('contacts.read', $permissions, true);
     $canOpportunities = $viewer->role !== 'employee' || in_array('opportunities.read', $permissions, true);
 @endphp
 <nav class="side-nav" aria-label="Secciones">
     <span class="nav-group-label">{{ $viewer->role === 'super_admin' ? 'Plataforma' : 'Mi empresa' }}</span>
     <a href="{{ route('dashboard') }}" @class(['current' => request()->routeIs('dashboard')]) @if(request()->routeIs('dashboard')) aria-current="page" @endif><span aria-hidden="true">▦</span> Panel</a>
+    @if($viewer->company_id)<a href="{{ route('notifications.index') }}" @class(['current' => request()->routeIs('notifications.*')])><span aria-hidden="true">◉</span> Notificaciones</a>@endif
     @if($viewer->role === 'super_admin')
         <a href="{{ route('companies.create') }}" @class(['current' => request()->routeIs('companies.create')])><span aria-hidden="true">＋</span> Nueva empresa</a>
         <a href="{{ route('employees.create') }}" @class(['current' => request()->routeIs('employees.*')])><span aria-hidden="true">♙</span> Registrar empleados</a>

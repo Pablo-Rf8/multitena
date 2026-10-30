@@ -44,7 +44,7 @@ class DashboardController extends Controller
             return view('employees.dashboard', [
                 'company' => $user->company,
                 'branch' => $user->branch,
-                'permissions' => $user->category?->permissions ?? [],
+                'permissions' => $user->category?->is_active ? ($user->category->permissions ?? []) : [],
                 'contactCount' => Contact::where('company_id', $user->company_id)->where('branch_id', $user->branch_id)->count(),
                 'opportunityCount' => Opportunity::where('company_id', $user->company_id)->where('branch_id', $user->branch_id)->count(),
             ]);
