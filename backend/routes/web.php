@@ -15,6 +15,9 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\AccessNotificationController;
+use App\Http\Controllers\CodeAccessController;
+use App\Http\Controllers\CodeGeneratorController;
+use App\Http\Controllers\CodeLoginController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -25,6 +28,13 @@ Route::get('/assets/theme.css', fn () => response()->file(base_path('../frontend
 Route::get('/assets/demo/pepsi.svg', fn () => response()->file(base_path('../frontend/assets/pepsi-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-pepsi');
 Route::get('/assets/demo/coca-cola.svg', fn () => response()->file(base_path('../frontend/assets/coca-cola-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-coca-cola');
 Route::get('/assets/company-logo/{code}', [BrandingController::class, 'publicLogo'])->name('branding.public-logo');
+Route::get('/assets/codes.css', fn () => response()->file(base_path('../frontend/css/codes.css'), ['Content-Type' => 'text/css']));
+Route::get('/assets/codes.js', fn () => response()->file(base_path('../frontend/js/codes.js'), ['Content-Type' => 'text/javascript']));
+
+Route::get('/codes/access', [CodeGeneratorController::class, 'access'])->name('codes.access');
+Route::post('/codes/verify', [CodeGeneratorController::class, 'verify'])->middleware('throttle:5,1')->name('codes.verify');
+Route::get('/codes/generator', [CodeGeneratorController::class, 'generator'])->name('codes.generator');
+Route::get('/codes/current', [CodeGeneratorController::class, 'current'])->name('codes.current');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'show'])->name('login');
@@ -32,6 +42,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/login/platform', [AuthController::class, 'selectPlatform'])->name('login.platform');
     Route::get('/login/change', [AuthController::class, 'changeContext'])->name('login.change');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::get('/login/code', [CodeLoginController::class, 'show'])->name('login.code');
+    Route::post('/login/code', [CodeLoginController::class, 'login'])->name('login.code.submit');
     Route::get('/forgot-password', [PasswordResetController::class, 'requestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->middleware('throttle:5,1')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'resetForm'])->name('password.reset');
@@ -46,6 +58,8 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/account/password', [PasswordController::class, 'update'])->name('password.update');
     Route::get('/branding/logo', [BrandingController::class, 'logo'])->middleware('tenant_user')->name('branding.logo');
+    Route::get('/codes/company', [CodeAccessController::class, 'company'])->name('codes.company');
+    Route::post('/codes/links/{link}/claim', [CodeAccessController::class, 'claim'])->name('codes.claim');
 
     Route::middleware('tenant_user')->group(function () {
         Route::get('/contacts', [ContactController::class, 'index'])->middleware('crm_permission:contacts.read')->name('contacts.index');
@@ -95,6 +109,13 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     });
 
     Route::middleware('super_admin')->group(function () {
+        Route::get('/codes/admin', [CodeAccessController::class, 'index'])->name('codes.admin');
+        Route::post('/codes/users/{user}/issue', [CodeAccessController::class, 'issue'])->name('codes.issue');
+        Route::post('/codes/links/{link}/renew', [CodeAccessController::class, 'renew'])->name('codes.renew');
+        Route::post('/codes/links/{link}/suspend', [CodeAccessController::class, 'suspend'])->name('codes.suspend');
+        Route::post('/codes/links/{link}/revoke', [CodeAccessController::class, 'revoke'])->name('codes.revoke');
+        Route::post('/codes/companies/{company}/suspend', [CodeAccessController::class, 'suspendCompany'])->name('codes.suspend-company');
+        Route::get('/codes/history', [CodeAccessController::class, 'history'])->name('codes.history');
         Route::get('/employees/create', [WorkforceController::class, 'create'])->name('employees.create');
         Route::post('/employees', [WorkforceController::class, 'store'])->name('employees.store');
         Route::post('/employees/import', [WorkforceController::class, 'import'])->name('employees.import');

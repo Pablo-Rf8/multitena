@@ -1,0 +1,24 @@
+:root { font-family: "Segoe UI", Arial, sans-serif; color: #172b35; background: #edf2f5; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100dvh; background: radial-gradient(circle at top left, #dce9ef, transparent 44%), #edf2f5; }
+.code-shell { display: grid; place-items: center; min-height: 100dvh; padding: 20px; }
+.code-card { width: min(100%, 470px); padding: clamp(24px, 5vw, 42px); background: #fff; border: 1px solid #d6e0e5; border-radius: 20px; box-shadow: 0 20px 55px #17344716; border-top: 6px solid var(--code-brand, #183d58); }
+.code-kicker { display: block; margin-bottom: 14px; color: var(--code-brand, #183d58); font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.13; }
+p { line-height: 1.5; color: #4b5e68; }
+.code-form { display: grid; gap: 9px; margin-top: 26px; }
+.code-form label { font-weight: 700; margin-top: 8px; }
+.code-form input { width: 100%; min-height: 48px; padding: 11px 13px; border: 1px solid #78909b; border-radius: 8px; font: inherit; }
+.code-form button { min-height: 48px; margin-top: 15px; padding: 10px 16px; color: #fff; background: #183d58; border: 0; border-radius: 8px; font: inherit; font-weight: 700; cursor: pointer; }
+.code-form button:disabled { opacity: .55; cursor: not-allowed; }
+:where(button,input):focus-visible { outline: 3px solid #d59531; outline-offset: 3px; }
+.code-alert { padding: 12px 14px; color: #7e2323; background: #fff0ef; border: 1px solid #e1a6a0; border-radius: 8px; }
+.code-help { margin-top: 28px; font-size: .87rem; }
+.code-status { display: inline-block; margin-top: 18px; padding: 6px 11px; color: #14583f; background: #dff3e9; border-radius: 999px; font-weight: 700; font-size: .85rem; }
+.code-status.is-unavailable { color: #7e2323; background: #fff0ef; }
+.code-value { display: block; margin: 22px 0 4px; font-size: clamp(2.8rem, 12vw, 4.3rem); line-height: 1.1; font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: .15em; color: var(--code-brand, #183d58); text-align: center; }
+.code-countdown { text-align: center; font-weight: 700; }
+.code-progress { height: 7px; margin-top: 15px; background: #dce6e9; border-radius: 99px; overflow: hidden; }
+.code-progress span { display: block; height: 100%; background: var(--code-brand, #183d58); transition: width .3s linear; }
+@media (max-width: 420px) { .code-card { border-radius: 14px; } .code-value { letter-spacing: .1em; } }
+@media (prefers-reduced-motion: reduce) { .code-progress span { transition: none; } }

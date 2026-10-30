@@ -24,6 +24,7 @@
             <button class="button" type="submit">Ingresar</button>
         </form>
         <div class="login-links">
+            @if($loginCompany)<a href="{{ route('login.code') }}">Ingresar con código temporal</a>@endif
             <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
             <a href="{{ route('login.change') }}">Elegir otro acceso</a>
         </div>

@@ -42,3 +42,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) close();
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const button = document.querySelector('[data-copy-link]');
+    button?.addEventListener('click', async () => {
+        const input = document.querySelector('[data-issued-link]');
+        const message = document.querySelector('[data-copy-message]');
+        try {
+            await navigator.clipboard.writeText(input.value);
+            message.textContent = 'Enlace copiado. Entregalo por un canal privado.';
+        } catch {
+            input.select();
+            message.textContent = 'Seleccioná y copiá el enlace.';
+        }
+    });
+});

@@ -15,6 +15,29 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **Personal y sesiones:** el administrador de empresa registra, revisa, edita y suspende empleados; edita permisos de categorías y consulta o revoca sesiones web y móviles. Los eventos de acceso se muestran en el centro de notificaciones.
 - **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El login muestra la marca al seleccionar el código de empresa y el panel usa la empresa autenticada. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
 - **Empleados web:** un empleado aprobado puede entrar al panel web y ve únicamente el CRM de su sucursal según los permisos de su categoría. Las rutas comprueban los permisos además de ocultar acciones no autorizadas en la interfaz.
+- **Códigos temporales:** el superadministrador emite enlaces individuales por 120 horas para empleados y administradores de empresa o sucursal. El titular verifica su contraseña en la página privada y obtiene un TOTP de seis dígitos que cambia cada 30 segundos. El login por código consume cada valor una sola vez; el historial y la suspensión se gestionan desde **Gestión de códigos y accesos**.
+
+## Uso de códigos temporales
+
+1. Ingresá como superadministrador a **Gestión de códigos y accesos** y generá un enlace para un usuario activo. El enlace contiene un token en el fragmento (`#...`), que no se envía en la URL HTTP; copialo de la pantalla de entrega única.
+2. El administrador de la empresa puede consultar los enlaces de su propia empresa y recibir una sola vez los que estén pendientes de entrega. Debe enviarlos a cada titular por un canal privado. Los administradores de sucursal solo ven el estado de los enlaces de su sucursal.
+3. El titular abre su enlace, verifica su correo y contraseña, y ve su código actual. La verificación dura 30 minutos; el enlace deja de funcionar a las 120 horas, o antes si se suspende o revoca.
+4. Para iniciar sesión con TOTP, elegí la empresa con su código habitual, abrí **Ingresar con código temporal** y escribí correo y código de seis dígitos. El login anterior con contraseña sigue disponible. El superadministrador continúa ingresando solo con contraseña.
+
+La aplicación móvil también puede usar `POST /api/login/code` con `email`, `code`, `company_code`, `device_id` y `device_name`. Los códigos se consumen una sola vez entre web y API; el dispositivo conserva las reglas de aprobación y el token se revoca al suspender el enlace.
+
+### Prueba local con un empleado DEMO
+
+El comando `app:seed-demo` crea empresas y administradores DEMO, pero no crea empleados. Para probar un empleado sin usar datos reales:
+
+1. Ejecutá `php artisan app:seed-demo` en local y conservá la contraseña que imprime para `admin@pepsi-demo.test`. Ingresá como superadministrador por `/login/platform` y consultá el código de **Pepsi (DEMO)** en el detalle de la empresa.
+2. Cerrá sesión, elegí ese código de empresa en `/login` e ingresá como `admin@pepsi-demo.test`. En **Personal y acceso**, registrá un empleado con un correo de prueba como `empleado.demo@pepsi-demo.test` y una contraseña de al menos 12 caracteres. Aprobá su solicitud; si querés probar el CRM, asignale una categoría con permisos de lectura.
+3. Volvé a ingresar como superadministrador. En **Gestión de códigos y accesos**, buscá el empleado y pulsá **Generar enlace**. Copiá el enlace de la pantalla de entrega única. El administrador de Pepsi también puede recibirlo una sola vez desde su panel.
+4. Abrí el enlace en otro navegador o ventana privada. Confirmá el correo y la contraseña del empleado para ver su código. Después, en `/login`, seleccioná Pepsi y usá **Ingresar con código temporal**. Cada código cambia a los 30 segundos y solo permite un inicio de sesión.
+
+En local, el generador usa `/codes/access#TOKEN` dentro de la misma aplicación. El token real solo se entrega al emitir el enlace; no lo pegues en capturas, tickets ni registros.
+
+El enlace solo se almacena como hash para validación; la copia pendiente de entrega está cifrada y se elimina al recibirla. El secreto TOTP individual también está cifrado. No se guardan códigos en el historial. Si se renueva un enlace, el anterior queda revocado y se finalizan las sesiones activas del usuario. Ejecutá `php artisan migrate --force` tras actualizar el código; no uses `migrate:fresh` sobre datos existentes.
 
 ## API móvil
 

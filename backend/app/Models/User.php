@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -49,6 +50,16 @@ class User extends Authenticatable
     public function mobileSessions(): HasMany
     {
         return $this->hasMany(MobileSession::class);
+    }
+
+    public function codeCredential(): HasOne
+    {
+        return $this->hasOne(CodeCredential::class);
+    }
+
+    public function codeLinks(): HasMany
+    {
+        return $this->hasMany(CodeLink::class);
     }
 
     protected function casts(): array
