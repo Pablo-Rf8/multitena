@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\EnsureTenantUser;
 use App\Http\Middleware\EnsureMobileSession;
 use App\Http\Middleware\EnsureCrmPermission;
+use App\Http\Middleware\CanonicalProductionUrl;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(CanonicalProductionUrl::class);
         if (env('TRUSTED_PROXIES')) $middleware->trustProxies(at: explode(',', env('TRUSTED_PROXIES')));
         $middleware->alias([
             'super_admin' => EnsureSuperAdmin::class,
