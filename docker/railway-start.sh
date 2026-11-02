@@ -26,4 +26,5 @@ if ! apache2ctl -t; then
     exit 1
 fi
 php artisan app:bootstrap-admin
+php artisan app:reset-published-demo-access
 exec /usr/bin/supervisord -n -c /etc/supervisor/conf.d/multitena.conf
