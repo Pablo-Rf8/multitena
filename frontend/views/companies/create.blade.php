@@ -27,6 +27,11 @@
         <p class="hint">Se sugiere a partir del nombre. Podés cambiarlo si el dominio es distinto.</p>
         @error('admin_email') <p class="field-error" role="alert">{{ $message }}</p> @enderror
 
+        <label for="email_domains">Dominio de correo para el acceso</label>
+        <input id="email_domains" name="email_domains" value="{{ old('email_domains') }}" placeholder="empresa.com" maxlength="1000">
+        <p class="hint">Podés agregar varios dominios separados por coma. Deben ser exclusivos de esta empresa.</p>
+        @error('email_domains') <p class="field-error" role="alert">{{ $message }}</p> @enderror
+
         <label for="admin_password">Contraseña inicial del administrador</label>
         <input id="admin_password" name="admin_password" type="password" minlength="12" autocomplete="new-password" required>
         <p class="hint">Mínimo 12 caracteres. Compartila con el administrador por un medio seguro.</p>

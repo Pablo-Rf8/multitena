@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\CompanySetting;
 use App\Models\MobileSession;
 use App\Services\WebSessionStarter;
+use App\Services\CompanyDomains;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,12 +27,12 @@ class AuthController extends Controller
         ]);
     }
 
-    public function selectCompany(Request $request): RedirectResponse
+    public function selectCompany(Request $request, CompanyDomains $domains): RedirectResponse
     {
-        $data = $request->validate(['company_code' => ['required', 'string', 'max:32']]);
-        $company = Company::where('code', strtoupper(trim($data['company_code'])))->where('is_active', true)->first();
+        $data = $request->validate(['company_code' => ['required', 'string', 'max:255']]);
+        $company = $domains->findActive($data['company_code']);
         if (! $company) {
-            return back()->withErrors(['company_code' => 'Código de empresa no reconocido.'])->onlyInput('company_code');
+            return back()->withErrors(['company_code' => 'Código o dominio de empresa no reconocido.'])->onlyInput('company_code');
         }
         $request->session()->put(['login_mode' => 'company', 'login_company_id' => $company->id]);
 

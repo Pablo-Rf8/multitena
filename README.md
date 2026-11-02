@@ -15,37 +15,19 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **Personal y sesiones:** el administrador de empresa registra, revisa, edita y suspende empleados; edita permisos de categorías y consulta o revoca sesiones web y móviles. Los eventos de acceso se muestran en el centro de notificaciones.
 - **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El login muestra la marca al seleccionar el código de empresa y el panel usa la empresa autenticada. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
 - **Empleados web:** un empleado aprobado puede entrar al panel web y ve únicamente el CRM de su sucursal según los permisos de su categoría. Las rutas comprueban los permisos además de ocultar acciones no autorizadas en la interfaz.
-- **Códigos temporales:** el superadministrador emite enlaces individuales por 120 horas para empleados y administradores de empresa o sucursal. El titular verifica su contraseña en la página privada y obtiene un TOTP de seis dígitos que cambia cada 30 segundos. El login por código consume cada valor una sola vez; el historial y la suspensión se gestionan desde **Gestión de códigos y accesos**.
 
-## Uso de códigos temporales
+## Acceso por empresa
 
-1. Ingresá como superadministrador a **Gestión de códigos y accesos** y generá un enlace para un usuario activo. El enlace contiene un token en el fragmento (`#...`), que no se envía en la URL HTTP; copialo de la pantalla de entrega única.
-2. El administrador de la empresa puede consultar los enlaces de su propia empresa y recibir una sola vez los que estén pendientes de entrega. Debe enviarlos a cada titular por un canal privado. Los administradores de sucursal solo ven el estado de los enlaces de su sucursal.
-3. El titular abre su enlace, verifica su correo y contraseña, y ve su código actual. La verificación dura 30 minutos; el enlace deja de funcionar a las 120 horas, o antes si se suspende o revoca.
-4. Para iniciar sesión con TOTP, elegí la empresa con su código habitual, abrí **Ingresar con código temporal** y escribí correo y código de seis dígitos. El login anterior con contraseña sigue disponible. El superadministrador continúa ingresando solo con contraseña.
+En el primer paso del login se puede ingresar el código de empresa (10 caracteres como mínimo) o un correo con un dominio configurado, por ejemplo `usuario@empresa.com`. El dominio se configura desde **Empresas → Editar empresa** o **Personal y acceso**. Cada dominio debe pertenecer a una sola empresa. Después se ingresa el correo y la contraseña del usuario; el superadministrador entra por `/login/platform` sin código ni dominio.
 
-La aplicación móvil también puede usar `POST /api/login/code` con `email`, `code`, `company_code`, `device_id` y `device_name`. Los códigos se consumen una sola vez entre web y API; el dispositivo conserva las reglas de aprobación y el token se revoca al suspender el enlace.
-
-### Prueba local con un empleado DEMO
-
-El comando `app:seed-demo` crea empresas y administradores DEMO, pero no crea empleados. Para probar un empleado sin usar datos reales:
-
-1. Ejecutá `php artisan app:seed-demo` en local y conservá la contraseña que imprime para `admin@pepsi-demo.test`. Ingresá como superadministrador por `/login/platform` y consultá el código de **Pepsi (DEMO)** en el detalle de la empresa.
-2. Cerrá sesión, elegí ese código de empresa en `/login` e ingresá como `admin@pepsi-demo.test`. En **Personal y acceso**, registrá un empleado con un correo de prueba como `empleado.demo@pepsi-demo.test` y una contraseña de al menos 12 caracteres. Aprobá su solicitud; si querés probar el CRM, asignale una categoría con permisos de lectura.
-3. Volvé a ingresar como superadministrador. En **Gestión de códigos y accesos**, buscá el empleado y pulsá **Generar enlace**. Copiá el enlace de la pantalla de entrega única. El administrador de Pepsi también puede recibirlo una sola vez desde su panel.
-4. Abrí el enlace en otro navegador o ventana privada. Confirmá el correo y la contraseña del empleado para ver su código. Después, en `/login`, seleccioná Pepsi y usá **Ingresar con código temporal**. Cada código cambia a los 30 segundos y solo permite un inicio de sesión.
-
-En local, el generador usa `/codes/access#TOKEN` dentro de la misma aplicación. El token real solo se entrega al emitir el enlace; no lo pegues en capturas, tickets ni registros.
-
-El enlace solo se almacena como hash para validación; la copia pendiente de entrega está cifrada y se elimina al recibirla. El secreto TOTP individual también está cifrado. No se guardan códigos en el historial. Si se renueva un enlace, el anterior queda revocado y se finalizan las sesiones activas del usuario. Ejecutá `php artisan migrate --force` tras actualizar el código; no uses `migrate:fresh` sobre datos existentes.
-
+Las empresas DEMO existentes reciben `pepsi-demo.test` y `coca-cola-demo.test` si todavía no tenían dominios configurados. Desde **Empresas → Ver detalle → Ver empleados**, el superadministrador consulta el personal de cada empresa y puede registrar empleados. La aprobación y la gestión diaria siguen a cargo del administrador de esa empresa.
 ## API móvil
 
-`POST /api/login` recibe `email`, `password`, `company_code`, `device_id` y `device_name`. El código de la empresa se encuentra en `companies.code`; los códigos de las empresas existentes se generan con la migración. El identificador de dispositivo solo identifica el equipo, nunca sustituye la contraseña. La respuesta entrega un token Bearer y su vencimiento. Con el token: `GET /api/session`, `POST /api/logout`, `GET/POST /api/contacts` y `GET/POST /api/opportunities`. Los empleados necesitan una categoría con el permiso correspondiente (`contacts.read`, `contacts.write`, `opportunities.read`, `opportunities.write`). El superadministrador no accede al CRM por API.
+`POST /api/login` recibe `email`, `password`, `device_id` y `device_name`. `company_code` es opcional si el dominio del correo está configurado para una sola empresa. El código de la empresa se encuentra en `companies.code`; los códigos de las empresas existentes se generan con la migración. El identificador de dispositivo solo identifica el equipo, nunca sustituye la contraseña. La respuesta entrega un token Bearer y su vencimiento. Con el token: `GET /api/session`, `POST /api/logout`, `GET/POST /api/contacts` y `GET/POST /api/opportunities`. Los empleados necesitan una categoría con el permiso correspondiente (`contacts.read`, `contacts.write`, `opportunities.read`, `opportunities.write`). El superadministrador no accede al CRM por API.
 
 Además, `PUT /api/device/push-token` registra el token de Firebase del dispositivo autenticado, y `GET /api/notifications` y `PATCH /api/notifications/{id}/read` gestionan sus avisos. El token push no es una credencial de acceso.
 
-En el login web, el usuario introduce primero el **código de empresa** y luego su correo y contraseña. El código aparece en el panel de empresa y en su detalle para el superadministrador. La pantalla ya muestra el tema y logotipo de la empresa antes de pedir credenciales. El enlace **Acceso de superadministrador** abre el login global sin código. Los logotipos de Pepsi y Coca-Cola incluidos en `frontend/assets/` son diseños de demostración; un administrador puede elegir entre el DEMO y su archivo cargado desde **Identidad visual** sin borrar el anterior.
+En el login web, el usuario introduce primero el **código de empresa o un correo del dominio configurado** y luego su correo y contraseña. El código aparece en el panel de empresa y en su detalle para el superadministrador. La pantalla ya muestra el tema y logotipo de la empresa antes de pedir credenciales. El enlace **Acceso de superadministrador** abre el login global sin código. Los logotipos de Pepsi y Coca-Cola incluidos en `frontend/assets/` son diseños de demostración; un administrador puede elegir entre el DEMO y su archivo cargado desde **Identidad visual** sin borrar el anterior.
 
 Ejecutá `php artisan schedule:work` o programá `php artisan schedule:run` para que las sesiones vencidas se marquen como expiradas. La API rechaza tokens vencidos incluso si el programador todavía no corrió. La revocación del dispositivo invalida sus tokens inmediatamente.
 

@@ -15,12 +15,13 @@
     </div>
     <div class="stats">
         <div class="stat"><strong>{{ $company->branches->count() }}</strong><span>Sucursales</span></div>
-        <div class="stat"><strong>{{ $company->users->count() }}</strong><span>Usuarios</span></div>
+        <div class="stat"><strong>{{ $userCount }}</strong><span>Usuarios</span></div>
         <div class="stat"><strong>{{ $contactCount }}</strong><span>Contactos</span></div>
         <div class="stat"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></div>
     </div>
     <dl class="details">
         <div><dt>Código de empresa</dt><dd>{{ $company->code }}</dd></div>
+        <div><dt>Dominios de acceso</dt><dd>{{ $domains ? implode(', ', $domains) : 'Sin configurar' }}</dd></div>
         <div><dt>Moneda</dt><dd>{{ $company->currency }}</dd></div>
         <div><dt>Correo de contacto</dt><dd>{{ $company->contact_email ?: 'Sin registrar' }}</dd></div>
         <div><dt>Teléfono</dt><dd>{{ $company->phone ?: 'Sin registrar' }}</dd></div>
@@ -68,6 +69,17 @@
             </tbody>
         </table>
     </div>
+    <div class="section-head section-subhead">
+        <h2>Empleados</h2>
+        <a class="button button-secondary" href="{{ route('companies.employees', $company) }}">Ver empleados</a>
+    </div>
+    <p>{{ $employeeCount }} empleados registrados en esta empresa. Desde la lista podés revisar su sucursal y estado.</p>
+    <h2>Administradores de sucursal</h2>
+    <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Sucursal</th><th>Estado</th></tr></thead><tbody>
+        @forelse($company->users->where('role', 'branch_admin') as $member)
+            <tr><td>{{ $member->name }}</td><td>{{ $member->email }}</td><td>{{ $company->branches->firstWhere('id', $member->branch_id)?->name ?? '—' }}</td><td>{{ $member->is_active ? 'Activo' : 'Suspendido' }}</td></tr>
+        @empty<tr><td colspan="4">Sin administradores de sucursal.</td></tr>@endforelse
+    </tbody></table></div>
     <h2>Actividad reciente</h2>
     @include('activity.table', ['activity' => $activity])
 </section>

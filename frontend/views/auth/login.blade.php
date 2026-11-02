@@ -24,18 +24,17 @@
             <button class="button" type="submit">Ingresar</button>
         </form>
         <div class="login-links">
-            @if($loginCompany)<a href="{{ route('login.code') }}">Ingresar con código temporal</a>@endif
             <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
             <a href="{{ route('login.change') }}">Elegir otro acceso</a>
         </div>
     @else
         <p class="eyebrow">Acceso seguro</p>
         <h1>Elegí tu empresa</h1>
-        <p class="intro">Introducí el código que te proporcionó el administrador de tu empresa.</p>
+        <p class="intro">Introducí el código de empresa (mínimo 10 caracteres) o un correo con el dominio configurado para tu empresa.</p>
         <form method="post" action="{{ route('login.company') }}" class="form-stack">
             @csrf
-            <label for="company_code">Código de empresa</label>
-            <input id="company_code" name="company_code" autocomplete="organization" maxlength="32" value="{{ old('company_code') }}" required autofocus>
+            <label for="company_code">Código de empresa o correo corporativo</label>
+            <input id="company_code" name="company_code" autocomplete="organization" maxlength="255" value="{{ old('company_code') }}" placeholder="ABCD123456 o usuario@empresa.com" required autofocus>
             @error('company_code')<p class="field-error" role="alert">{{ $message }}</p>@enderror
             <button class="button" type="submit">Continuar</button>
         </form>

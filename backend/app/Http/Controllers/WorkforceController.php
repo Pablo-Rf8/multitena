@@ -212,7 +212,7 @@ class WorkforceController extends Controller
         return back()->with('status', 'Categoría actualizada.');
     }
 
-    public function settings(Request $request): RedirectResponse
+    public function settings(Request $request, \App\Services\CompanyDomains $companyDomains): RedirectResponse
     {
         $data = $request->validate([
             'email_domains' => ['nullable', 'string', 'max:1000'],
@@ -220,12 +220,8 @@ class WorkforceController extends Controller
             'require_device_approval' => ['required', 'boolean'],
             'token_lifetime_hours' => ['required', 'integer', 'between:1,2160'],
         ]);
-        $domains = array_values(array_filter(array_map(fn ($d) => strtolower(trim($d)), explode(',', $data['email_domains'] ?? ''))));
-        foreach ($domains as $domain) {
-            if (! filter_var('test@'.$domain, FILTER_VALIDATE_EMAIL)) {
-                return back()->withErrors(['email_domains' => 'Dominio inválido.']);
-            }
-        }
+        $domains = $companyDomains->parse($data['email_domains'] ?? null);
+        $companyDomains->assertAvailable($domains, $request->user()->company_id);
         CompanySetting::updateOrCreate(['company_id' => $request->user()->company_id], [
             'email_domains' => $domains,
             'employee_access_enabled' => $data['employee_access_enabled'],

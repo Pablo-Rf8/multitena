@@ -26,6 +26,10 @@
         <label for="phone">Teléfono</label>
         <input id="phone" name="phone" value="{{ old('phone', $company->phone) }}" maxlength="40">
         @error('phone')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+        <label for="email_domains">Dominios de correo para el acceso</label>
+        <input id="email_domains" name="email_domains" value="{{ old('email_domains', implode(', ', $domains)) }}" placeholder="empresa.com" maxlength="1000">
+        <p class="hint">Separalos por coma. Un dominio solo puede pertenecer a una empresa.</p>
+        @error('email_domains')<p class="field-error" role="alert">{{ $message }}</p>@enderror
         <button class="button" type="submit">Guardar cambios</button>
     </form>
 </section>

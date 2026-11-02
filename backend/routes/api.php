@@ -6,7 +6,6 @@ use App\Http\Controllers\AccessNotificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [MobileAuthController::class, 'login'])->middleware('throttle:5,1');
-Route::post('/login/code', [MobileAuthController::class, 'loginWithCode']);
 Route::middleware(['auth:sanctum', 'mobile_session'])->group(function () {
     Route::get('/session', [MobileAuthController::class, 'session']);
     Route::post('/logout', [MobileAuthController::class, 'logout']);
