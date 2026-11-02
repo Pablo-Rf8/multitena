@@ -44,10 +44,11 @@ class ResetPublishedDemoAccess extends Command
                     $this->info($name.' creada; código: '.$company->code);
                     continue;
                 }
-                if (! $company->is_demo) {
-                    $this->warn($name.' no está marcada DEMO; no se modificó.');
+                if (! $company->is_demo && $company->name !== $name) {
+                    $this->warn($name.' no coincide con la empresa DEMO esperada; no se modificó.');
                     continue;
                 }
+                if (! $company->is_demo) $company->update(['is_demo' => true]);
                 $user = $company->users()->where('email', $email)->where('role', 'company_admin')->first();
                 if (! $user) {
                     $branch = $company->branches()->where('is_central', true)->first();

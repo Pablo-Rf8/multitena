@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Company;
 use App\Models\User;
+use App\Services\CreateCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -32,6 +33,25 @@ class PublishedDemoAccessTest extends TestCase
             $this->assertSame(2, Company::where('is_demo', true)->count());
             $this->artisan('app:reset-published-demo-access')->assertSuccessful();
             $this->assertSame(3, User::count());
+        } finally {
+            putenv('DEMO_ACCESS_RESET_JSON');
+        }
+    }
+
+    public function test_existing_demo_named_company_is_recognized_without_replacing_its_data(): void
+    {
+        $company = app(CreateCompany::class)->handle('Pepsi (DEMO)', 'admin@pepsi-demo.test', 'old-password-123');
+        putenv('DEMO_ACCESS_RESET_JSON='.json_encode([
+            'superadmin@multitena.local' => 'Platform!Sample!2026',
+            'admin@pepsi-demo.test' => 'Pepsi!Sample!2026',
+            'admin@coca-cola-demo.test' => 'Coca!Sample!2026',
+        ]));
+
+        try {
+            $this->artisan('app:reset-published-demo-access')->assertSuccessful();
+            $this->assertTrue($company->fresh()->is_demo);
+            $this->assertSame($company->code, Company::where('slug', 'pepsi-demo')->firstOrFail()->code);
+            $this->assertTrue(Hash::check('Pepsi!Sample!2026', User::where('email', 'admin@pepsi-demo.test')->firstOrFail()->password));
         } finally {
             putenv('DEMO_ACCESS_RESET_JSON');
         }
