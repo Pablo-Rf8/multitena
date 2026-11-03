@@ -10,7 +10,7 @@
             <h1>Oportunidades</h1>
             <p class="intro">Seguimiento de posibles ventas, desde el primer contacto hasta el cierre.</p>
         </div>
-        @if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.index') }}">Elegir contacto</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>Elegir contacto</a>@endif
     </div>
     <div class="stats">
         @foreach(['new'=>'Nuevas','qualified'=>'Calificadas','proposal'=>'Propuestas','won'=>'Ganadas','lost'=>'Perdidas'] as $key => $label)

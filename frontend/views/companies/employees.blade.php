@@ -7,7 +7,7 @@
     <a class="back-link" href="{{ route('companies.show', $company) }}">← Volver a {{ $company->name }}</a>
     <div class="section-head">
         <div><p class="eyebrow">Empresa</p><h1>Empleados de {{ $company->name }}</h1><p class="intro">Consultá el personal y su estado de aprobación por empresa.</p></div>
-        <a class="button button-primary" href="{{ route('employees.create', ['company_id' => $company->id]) }}">Registrar empleado</a>
+        <a class="button button-primary" href="{{ route('employees.create', ['company_id' => $company->id]) }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>Registrar empleado</a>
     </div>
     <div class="table-scroll"><table>
         <thead><tr><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Sucursal</th><th>Categoría</th><th>Acceso</th></tr></thead>

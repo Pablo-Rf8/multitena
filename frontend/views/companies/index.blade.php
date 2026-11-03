@@ -10,7 +10,7 @@
             <h1>Vista general de la plataforma</h1>
             <p class="intro">Empresas, accesos y operación en un solo lugar.</p>
         </div>
-        <a class="button button-primary" href="{{ route('companies.create') }}">Crear empresa</a>
+        <a class="button button-primary" href="{{ route('companies.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>Crear empresa</a>
     </div>
     <div class="stats">
         <div class="stat"><strong>{{ $companyCount }}</strong><span>Empresas</span></div>

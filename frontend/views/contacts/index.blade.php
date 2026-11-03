@@ -10,7 +10,7 @@
             <h1>Contactos</h1>
             <p class="intro">Personas y organizaciones que atiende tu equipo.</p>
         </div>
-        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.create') }}">Agregar contacto</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>Agregar contacto</a>@endif
     </div>
     <form method="get" action="{{ route('contacts.index') }}" class="filter-bar">
         <label class="sr-only" for="contact-search">Buscar</label>

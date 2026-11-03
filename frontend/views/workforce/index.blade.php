@@ -8,7 +8,7 @@
             <h1>Personal y acceso</h1>
             <p class="intro">Revisá solicitudes y administrá a las personas de tu empresa.</p>
         </div>
-        <a class="button button-primary" href="{{ route('workforce.employees.create') }}">Registrar empleado</a>
+        <a class="button button-primary" href="{{ route('workforce.employees.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>Registrar empleado</a>
     </div>
     @if($errors->any())<div class="notice notice-error" role="alert">{{ $errors->first() }}</div>@endif
     <div class="workforce-list">

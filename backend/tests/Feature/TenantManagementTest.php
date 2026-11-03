@@ -68,7 +68,7 @@ class TenantManagementTest extends TestCase
         $this->actingAs($user)->put('/account/password', [
             'current_password' => 'incorrect', 'password' => 'new-password-456',
             'password_confirmation' => 'new-password-456',
-        ])->assertSessionHasErrors('current_password');
+        ])->assertSessionHasErrorsIn('accountPassword', 'current_password');
         $this->assertTrue(Hash::check('old-password-123', $user->fresh()->password));
 
         $this->actingAs($user)->put('/account/password', [
@@ -76,6 +76,20 @@ class TenantManagementTest extends TestCase
             'password_confirmation' => 'new-password-456',
         ])->assertRedirect('/dashboard');
         $this->assertTrue(Hash::check('new-password-456', $user->fresh()->password));
+    }
+
+    public function test_account_dialog_is_in_sidebar_and_reopens_after_password_error(): void
+    {
+        $user = User::factory()->create(['role' => 'super_admin', 'password' => 'old-password-123']);
+
+        $this->actingAs($user)->get('/dashboard')->assertOk()
+            ->assertSee('data-account-open')->assertSee('id="account-dialog"', false)
+            ->assertSee('Cambiar contraseña')->assertSee('Cerrar sesión');
+
+        $this->followingRedirects()->from('/dashboard')->actingAs($user)->put('/account/password', [
+            'current_password' => 'incorrect', 'password' => 'new-password-456',
+            'password_confirmation' => 'new-password-456',
+        ])->assertOk()->assertSee('data-account-error="true"', false);
     }
 
     public function test_demo_command_is_labeled_and_does_not_overwrite_existing_records(): void

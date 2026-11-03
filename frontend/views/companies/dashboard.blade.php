@@ -16,7 +16,7 @@
         @endif
     </div>
     <div class="actions">
-        <a class="button button-primary" href="{{ route('contacts.create') }}">Agregar contacto</a>
+        <a class="button button-primary" href="{{ route('contacts.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>Agregar contacto</a>
     </div>
     @if ($isCompanyAdmin)
         <details class="disclosure"><summary>Datos de acceso</summary><div class="disclosure-body"><p>Código para iniciar sesión: <strong>{{ $company->code }}</strong></p></div></details>

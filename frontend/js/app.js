@@ -41,3 +41,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) close();
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.querySelector('#account-dialog');
+    const trigger = document.querySelector('[data-account-open]');
+    if (!dialog || !trigger || typeof dialog.showModal !== 'function') return;
+
+    trigger.addEventListener('click', () => {
+        document.body.classList.remove('sidebar-open');
+        document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded', 'false');
+        dialog.showModal();
+    });
+    dialog.querySelector('[data-account-close]')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('close', () => {
+        const focusTarget = window.matchMedia('(max-width: 760px)').matches
+            ? document.querySelector('[data-sidebar-open]') : trigger;
+        focusTarget?.focus();
+    });
+    if (dialog.dataset.accountError === 'true') dialog.showModal();
+});

@@ -20,6 +20,20 @@
     <script src="{{ route('assets.js') }}" defer></script>
 </head>
 <body class="{{ $isPlatform ? 'theme-platform' : ($brandCompany ? 'theme-tenant' : 'theme-public') }}" style="{{ $themeStyle }}">
+<svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7"/></symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
+    <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2zM17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></symbol>
+    <symbol id="icon-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13c5 3 13 3 18 0"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-3.5 8-9 10-5.5-2-9-5-9-10V6zM9 12l2 2 4-4"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></symbol>
+    <symbol id="icon-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 2-2c0-1-.5-1.5-.5-2.5a2 2 0 0 1 2-2H19a2 2 0 0 0 2-2A9 9 0 0 0 12 3z"/><circle cx="7" cy="12" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="16" cy="8" r="1"/></symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="icon-key" viewBox="0 0 24 24"><circle cx="7" cy="15" r="4"/><path d="m10 12 9-9 2 2-2 2 2 2-3 3-2-2-3 3"/></symbol>
+    <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M14 7l5 5-5 5M8 12h11"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
+</svg>
 <a class="skip-link" href="#main-content">Ir al contenido</a>
 <div class="{{ $viewer ? 'app-shell' : 'public-shell' }}">
     @if($viewer)
@@ -37,8 +51,11 @@
             </div>
             @include('partials.navigation', ['viewer' => $viewer])
             <div class="sidebar-bottom">
-                <span class="account-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
-                <span class="account-identity"><strong>{{ $viewer->name }}</strong><small>{{ ['super_admin'=>'Superadministrador','company_admin'=>'Administrador de empresa','branch_admin'=>'Administrador de sucursal','employee'=>'Empleado'][$viewer->role] ?? $viewer->role }}</small></span>
+                <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog" aria-label="Abrir opciones de la cuenta de {{ $viewer->name }}">
+                    <span class="account-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
+                    <span class="account-identity"><strong>{{ $viewer->name }}</strong><small>{{ ['super_admin'=>'Admin global','company_admin'=>'Admin de empresa','branch_admin'=>'Admin de sucursal','employee'=>'Empleado'][$viewer->role] ?? $viewer->role }}</small></span>
+                    <svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg>
+                </button>
             </div>
         </aside>
         <div class="sidebar-scrim" data-sidebar-close></div>
@@ -48,14 +65,9 @@
             <div class="header-inner">
                 @if($viewer)<button class="menu-toggle" type="button" data-sidebar-open aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">☰</button>@endif
                 <div class="header-context"><span class="eyebrow">{{ $isPlatform ? 'Plataforma' : ($brandCompany?->name ?? 'Acceso') }}</span><strong>@yield('page-label', $viewer ? (request()->routeIs('dashboard') ? 'Panel de control' : trim(explode('·', $__env->yieldContent('title', 'Espacio de trabajo'))[0])) : 'Acceso seguro')</strong></div>
-                @if($viewer)
-                <div class="account">
-                    <a href="{{ route('password.edit') }}">Mi contraseña</a>
-                    <form method="post" action="{{ route('logout') }}">@csrf<button class="text-button" type="submit">Salir</button></form>
-                </div>
-                @else
+                @unless($viewer)
                     <span class="public-brand">@if($brandLogo)<img src="{{ $brandLogo }}" alt="" width="32" height="32">@endif {{ $brandName }}</span>
-                @endif
+                @endunless
             </div>
         </header>
         <main class="page" id="main-content">
@@ -66,5 +78,31 @@
         </main>
     </div>
 </div>
+@if($viewer)
+<dialog class="account-dialog" id="account-dialog" aria-labelledby="account-dialog-title" @if($errors->accountPassword->has('current_password') || $errors->accountPassword->has('password')) data-account-error="true" @endif>
+    <div class="account-dialog-inner">
+        <div class="account-dialog-head">
+            <div><p class="eyebrow">Mi cuenta</p><h2 id="account-dialog-title">Cambiar contraseña</h2><p class="muted">{{ $viewer->email }}</p></div>
+            <button type="button" class="dialog-close" data-account-close aria-label="Cerrar ventana"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
+        </div>
+        <form method="post" action="{{ route('password.update') }}" class="form-stack account-password-form">
+            @csrf @method('PUT')
+            <label for="modal-current-password">Contraseña actual</label>
+            <input id="modal-current-password" name="current_password" type="password" autocomplete="current-password" required>
+            @error('current_password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+            <label for="modal-new-password">Nueva contraseña</label>
+            <input id="modal-new-password" name="password" type="password" minlength="12" autocomplete="new-password" required>
+            <p class="hint">Mínimo 12 caracteres.</p>
+            @error('password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+            <label for="modal-confirm-password">Confirmar contraseña</label>
+            <input id="modal-confirm-password" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
+            <button class="button button-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Guardar contraseña</button>
+        </form>
+        <div class="account-dialog-footer">
+            <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
+        </div>
+    </div>
+</dialog>
+@endif
 </body>
 </html>
