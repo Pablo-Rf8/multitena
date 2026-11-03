@@ -44,7 +44,7 @@
         @else
             <p class="hint">Se guardará en tu sucursal: {{ auth()->user()->branch->name }}.</p>
         @endif
-        <button class="button" type="submit">{{ $contact ? 'Guardar cambios' : 'Crear contacto' }}</button>
+        <button class="button button-primary" type="submit">{{ $contact ? 'Guardar cambios' : 'Crear contacto' }}</button>
     </form>
 </section>
 @endsection

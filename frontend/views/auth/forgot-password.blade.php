@@ -13,7 +13,7 @@
         <label for="email">Correo electrónico</label>
         <input id="email" name="email" type="email" autocomplete="email" value="{{ old('email') }}" required autofocus>
         @error('email')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <button class="button" type="submit">Enviar enlace</button>
+        <button class="button button-primary" type="submit">Enviar enlace</button>
     </form>
 </section>
 @endsection

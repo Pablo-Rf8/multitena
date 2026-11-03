@@ -13,7 +13,7 @@
 <label>Teléfono (opcional) <input type="tel" name="phone" maxlength="40" autocomplete="tel" value="{{ old('phone') }}"></label>
 <label>Contraseña <input type="password" name="password" required minlength="12"></label>
 <label>Confirmar contraseña <input type="password" name="password_confirmation" required minlength="12"></label>
-<button type="submit">Crear empleado</button>
+<button class="button button-primary" type="submit">Crear empleado</button>
 </form>
 </section>
 <section class="panel">

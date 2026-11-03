@@ -10,7 +10,7 @@
             <h1>Oportunidades</h1>
             <p class="intro">Seguimiento de posibles ventas, desde el primer contacto hasta el cierre.</p>
         </div>
-        @if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a class="button" href="{{ route('contacts.index') }}">Elegir contacto</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.read', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.index') }}">Elegir contacto</a>@endif
     </div>
     <div class="stats">
         @foreach(['new'=>'Nuevas','qualified'=>'Calificadas','proposal'=>'Propuestas','won'=>'Ganadas','lost'=>'Perdidas'] as $key => $label)
@@ -36,7 +36,7 @@
                 @endforeach
             </select>
         @endif
-        <button class="button button-secondary" type="submit">Filtrar</button>
+        <button class="button button-ghost" type="submit">Filtrar</button>
         <a href="{{ route('opportunities.export', request()->only(['q','stage','branch_id'])) }}">Exportar CSV</a>
     </form>
     @if($opportunities->isEmpty())

@@ -21,7 +21,7 @@
             <label for="password">Contraseña</label>
             <input id="password" name="password" type="password" autocomplete="current-password" required>
             @error('password')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-            <button class="button" type="submit">Ingresar</button>
+            <button class="button button-primary" type="submit">Ingresar</button>
         </form>
         <div class="login-links">
             <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
@@ -36,7 +36,7 @@
             <label for="company_code">Código de empresa o correo corporativo</label>
             <input id="company_code" name="company_code" autocomplete="organization" maxlength="255" value="{{ old('company_code') }}" placeholder="ABCD123456 o usuario@empresa.com" required autofocus>
             @error('company_code')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-            <button class="button" type="submit">Continuar</button>
+            <button class="button button-primary" type="submit">Continuar</button>
         </form>
         <div class="login-links"><a href="{{ route('login.platform') }}">Acceso de superadministrador</a></div>
     @endif

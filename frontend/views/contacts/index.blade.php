@@ -10,7 +10,7 @@
             <h1>Contactos</h1>
             <p class="intro">Personas y organizaciones que atiende tu equipo.</p>
         </div>
-        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button" href="{{ route('contacts.create') }}">Agregar contacto</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-primary" href="{{ route('contacts.create') }}">Agregar contacto</a>@endif
     </div>
     <form method="get" action="{{ route('contacts.index') }}" class="filter-bar">
         <label class="sr-only" for="contact-search">Buscar</label>
@@ -31,7 +31,7 @@
                 @endforeach
             </select>
         @endif
-        <button class="button button-secondary" type="submit">Filtrar</button>
+        <button class="button button-ghost" type="submit">Filtrar</button>
         <a href="{{ route('contacts.export', request()->only(['q','status','branch_id'])) }}">Exportar CSV</a>
     </form>
     @if($contacts->isEmpty())

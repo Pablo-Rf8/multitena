@@ -10,7 +10,7 @@
             <h1>Vista general de la plataforma</h1>
             <p class="intro">Empresas, accesos y operación en un solo lugar.</p>
         </div>
-        <a class="button" href="{{ route('companies.create') }}">Crear empresa</a>
+        <a class="button button-primary" href="{{ route('companies.create') }}">Crear empresa</a>
     </div>
     <div class="stats">
         <div class="stat"><strong>{{ $companyCount }}</strong><span>Empresas</span></div>
@@ -27,7 +27,7 @@
             <option value="active" @selected(request('status') === 'active')>Activas</option>
             <option value="suspended" @selected(request('status') === 'suspended')>Suspendidas</option>
         </select>
-        <button class="button button-secondary" type="submit">Filtrar</button>
+        <button class="button button-ghost" type="submit">Filtrar</button>
     </form>
     @if ($companies->isEmpty())
         <div class="empty-state">Todavía no hay empresas. Creá la primera para empezar.</div>

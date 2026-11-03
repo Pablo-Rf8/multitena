@@ -19,7 +19,7 @@
         <label for="phone">Teléfono</label>
         <input id="phone" name="phone" value="{{ old('phone', $branch->phone) }}" maxlength="40">
         @error('phone')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <button class="button" type="submit">Guardar sucursal</button>
+        <button class="button button-primary" type="submit">Guardar sucursal</button>
     </form>
 </section>
 @endsection

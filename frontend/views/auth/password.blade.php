@@ -20,7 +20,7 @@
 
         <label for="password_confirmation">Confirmar nueva contraseña</label>
         <input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
-        <button class="button" type="submit">Guardar contraseña</button>
+        <button class="button button-primary" type="submit">Guardar contraseña</button>
     </form>
 </section>
 @endsection

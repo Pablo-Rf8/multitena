@@ -24,7 +24,7 @@
             <input type="hidden" name="logo_mode" value="custom">
         @endif
         @if($company->logo_path)<p class="hint">Hay un logotipo cargado. Subí otro archivo para reemplazarlo.</p>@else<p class="hint">Mientras no subas uno, se muestra una marca con la inicial de la empresa.</p>@endif
-        <button class="button" type="submit">Guardar identidad visual</button>
+        <button class="button button-primary" type="submit">Guardar identidad visual</button>
     </form>
 </section>
 @endsection

@@ -11,7 +11,7 @@
             <h1>{{ $company->name }} @if($company->is_demo)<span class="tag">DEMO</span>@endif</h1>
             <p class="intro">{{ $company->slug }} · {{ $company->is_active ? 'Activa' : 'Suspendida' }}</p>
         </div>
-        <a class="button button-secondary" href="{{ route('companies.edit', $company) }}">Editar empresa</a>
+        <a class="button button-ghost" href="{{ route('companies.edit', $company) }}">Editar empresa</a>
     </div>
     <div class="stats">
         <div class="stat"><strong>{{ $company->branches->count() }}</strong><span>Sucursales</span></div>
@@ -19,6 +19,8 @@
         <div class="stat"><strong>{{ $contactCount }}</strong><span>Contactos</span></div>
         <div class="stat"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></div>
     </div>
+    <div class="dashboard-shortcuts"><a href="{{ route('companies.employees', $company) }}">Ver empleados <span aria-hidden="true">→</span></a><a href="{{ route('company-admins.create', $company) }}">Agregar administrador <span aria-hidden="true">→</span></a></div>
+    <details class="disclosure"><summary>Información de la empresa</summary><div class="disclosure-body">
     <dl class="details">
         <div><dt>Código de empresa</dt><dd>{{ $company->code }}</dd></div>
         <div><dt>Dominios de acceso</dt><dd>{{ $domains ? implode(', ', $domains) : 'Sin configurar' }}</dd></div>
@@ -31,8 +33,9 @@
         <input type="hidden" name="is_active" value="{{ $company->is_active ? '0' : '1' }}">
         <button type="submit" class="button {{ $company->is_active ? 'button-danger' : '' }}">{{ $company->is_active ? 'Suspender empresa' : 'Activar empresa' }}</button>
     </form>
+    </div></details>
 
-    <h2>Sucursales</h2>
+    <details class="disclosure"><summary>Sucursales <small>{{ $company->branches->count() }} registradas</small></summary><div class="disclosure-body">
     <div class="table-scroll">
         <table>
             <thead><tr><th>Nombre</th><th>Estado</th><th>Dirección</th></tr></thead>
@@ -43,9 +46,11 @@
             </tbody>
         </table>
     </div>
+    </div></details>
+    <details class="disclosure"><summary>Administradores <small>{{ $company->users->whereIn('role', ['company_admin', 'branch_admin'])->count() }} registrados</small></summary><div class="disclosure-body">
     <div class="section-head section-subhead">
         <h2>Administradores de empresa</h2>
-        <a class="button button-secondary" href="{{ route('company-admins.create', $company) }}">Agregar administrador</a>
+        <a class="button button-ghost" href="{{ route('company-admins.create', $company) }}">Agregar administrador</a>
     </div>
     <div class="table-scroll">
         <table>
@@ -69,18 +74,15 @@
             </tbody>
         </table>
     </div>
-    <div class="section-head section-subhead">
-        <h2>Empleados</h2>
-        <a class="button button-secondary" href="{{ route('companies.employees', $company) }}">Ver empleados</a>
-    </div>
-    <p>{{ $employeeCount }} empleados registrados en esta empresa. Desde la lista podés revisar su sucursal y estado.</p>
     <h2>Administradores de sucursal</h2>
     <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Sucursal</th><th>Estado</th></tr></thead><tbody>
         @forelse($company->users->where('role', 'branch_admin') as $member)
             <tr><td>{{ $member->name }}</td><td>{{ $member->email }}</td><td>{{ $company->branches->firstWhere('id', $member->branch_id)?->name ?? '—' }}</td><td>{{ $member->is_active ? 'Activo' : 'Suspendido' }}</td></tr>
         @empty<tr><td colspan="4">Sin administradores de sucursal.</td></tr>@endforelse
     </tbody></table></div>
-    <h2>Actividad reciente</h2>
+    </div></details>
+    <details class="disclosure"><summary>Actividad reciente</summary><div class="disclosure-body">
     @include('activity.table', ['activity' => $activity])
+    </div></details>
 </section>
 @endsection

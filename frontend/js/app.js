@@ -14,9 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
         email.value = slug ? `admin@${slug}.com` : '';
     });
 });
-
 document.addEventListener('submit', event => {
-    const message = event.target.dataset.confirm;
+    const message = event.submitter?.dataset.confirm || event.target.dataset.confirm;
     if (message && !window.confirm(message)) event.preventDefault();
     if (!event.defaultPrevented && event.target.method.toLowerCase() !== 'get') {
         document.body.classList.add('is-loading');
@@ -40,20 +39,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-sidebar-close]').forEach(button => button.addEventListener('click', close));
     document.addEventListener('keydown', event => {
         if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) close();
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const button = document.querySelector('[data-copy-link]');
-    button?.addEventListener('click', async () => {
-        const input = document.querySelector('[data-issued-link]');
-        const message = document.querySelector('[data-copy-message]');
-        try {
-            await navigator.clipboard.writeText(input.value);
-            message.textContent = 'Enlace copiado. Entregalo por un canal privado.';
-        } catch {
-            input.select();
-            message.textContent = 'Seleccioná y copiá el enlace.';
-        }
     });
 });

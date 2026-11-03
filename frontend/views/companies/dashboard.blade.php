@@ -4,10 +4,9 @@
 
 @section('content')
 <section class="panel">
-    <p class="eyebrow">{{ $isCompanyAdmin ? 'Administración de empresa' : 'Administración de sucursal' }}</p>
+    <p class="eyebrow">{{ $isCompanyAdmin ? 'Empresa' : 'Sucursal' }} · {{ $branch->name }}</p>
     <h1>{{ $company->name }} @if ($company->is_demo) <span class="tag">DEMO</span> @endif</h1>
-    <p class="intro">Tu sucursal asignada es {{ $branch->name }}.</p>
-    @if ($isCompanyAdmin)<p class="intro">Código de empresa para iniciar sesión en la web o la app móvil: <strong>{{ $company->code }}</strong></p>@endif
+    <p class="intro">Resumen de tu trabajo.</p>
     <div class="stats">
         <a class="stat stat-link" href="{{ route('contacts.index') }}"><strong>{{ $contactCount }}</strong><span>Contactos</span></a>
         <a class="stat stat-link" href="{{ route('opportunities.index') }}"><strong>{{ $opportunityCount }}</strong><span>Oportunidades</span></a>
@@ -17,15 +16,14 @@
         @endif
     </div>
     <div class="actions">
-        <a class="button" href="{{ route('contacts.create') }}">Agregar contacto</a>
-        <a class="button button-secondary" href="{{ route('opportunities.index') }}">Ver oportunidades</a>
+        <a class="button button-primary" href="{{ route('contacts.create') }}">Agregar contacto</a>
     </div>
     @if ($isCompanyAdmin)
+        <details class="disclosure"><summary>Datos de acceso</summary><div class="disclosure-body"><p>Código para iniciar sesión: <strong>{{ $company->code }}</strong></p></div></details>
+        <details class="disclosure" id="branches"><summary>Sucursales <small>{{ $company->branches->count() }} registradas</small></summary><div class="disclosure-body">
         <div class="actions">
-            <a class="button button-secondary" href="{{ route('branches.create') }}">Agregar sucursal</a>
-            <a class="button button-secondary" href="{{ route('branch-users.create') }}">Agregar administrador</a>
+            <a class="button button-ghost" href="{{ route('branches.create') }}">Agregar sucursal</a>
         </div>
-        <h2>Sucursales</h2>
         <div class="table-scroll">
             <table>
                 <thead><tr><th>Sucursal</th><th>Estado</th><th>Administradores asignados</th><th>Acción</th></tr></thead>
@@ -56,7 +54,9 @@
                 </tbody>
             </table>
         </div>
-        <h2>Usuarios de la empresa</h2>
+        </div></details>
+        <details class="disclosure" id="users"><summary>Usuarios de la empresa <small>{{ $company->users->count() }} registrados</small></summary><div class="disclosure-body">
+        <div class="actions"><a class="button button-ghost" href="{{ route('branch-users.create') }}">Agregar administrador de sucursal</a></div>
         <div class="table-scroll">
             <table>
                 <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Sucursal</th><th>Estado</th><th>Acción</th></tr></thead>
@@ -84,6 +84,7 @@
                 </tbody>
             </table>
         </div>
+        </div></details>
     @else
         <h2>Sucursal</h2>
         <p>{{ $branch->name }}</p>

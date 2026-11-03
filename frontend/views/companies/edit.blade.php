@@ -30,7 +30,7 @@
         <input id="email_domains" name="email_domains" value="{{ old('email_domains', implode(', ', $domains)) }}" placeholder="empresa.com" maxlength="1000">
         <p class="hint">Separalos por coma. Un dominio solo puede pertenecer a una empresa.</p>
         @error('email_domains')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <button class="button" type="submit">Guardar cambios</button>
+        <button class="button button-primary" type="submit">Guardar cambios</button>
     </form>
 </section>
 @endsection

@@ -11,7 +11,7 @@
             <h1>{{ $contact->name }} @if($contact->is_demo)<span class="tag">DEMO</span>@endif</h1>
             <p class="intro">{{ $contact->organization ?: 'Sin organización' }} · {{ $contact->branch->name }}</p>
         </div>
-        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-secondary" href="{{ route('contacts.edit', $contact) }}">Editar contacto</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('contacts.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-ghost" href="{{ route('contacts.edit', $contact) }}">Editar contacto</a>@endif
     </div>
     <dl class="details">
         <div><dt>Estado</dt><dd>{{ ['prospect'=>'Prospecto','qualified'=>'Calificado','customer'=>'Cliente','inactive'=>'Inactivo'][$contact->status] ?? $contact->status }}</dd></div>
@@ -22,7 +22,7 @@
     @if(auth()->user()->role !== 'employee' || in_array('opportunities.read', auth()->user()->category?->permissions ?? [], true))
     <div class="section-head section-subhead">
         <h2>Oportunidades</h2>
-        @if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-secondary" href="{{ route('opportunities.create', ['contact' => $contact->id]) }}">Agregar oportunidad</a>@endif
+        @if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-ghost" href="{{ route('opportunities.create', ['contact' => $contact->id]) }}">Agregar oportunidad</a>@endif
     </div>
     @if($contact->opportunities->isEmpty())
         <p class="empty-state">Este contacto todavía no tiene oportunidades.</p>
@@ -52,7 +52,7 @@
         <label for="body">Nueva nota</label>
         <textarea id="body" name="body" rows="4" maxlength="5000" required placeholder="Registrá una llamada, reunión o próximo paso">{{ old('body') }}</textarea>
         @error('body')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <button class="button" type="submit">Agregar nota</button>
+        <button class="button button-primary" type="submit">Agregar nota</button>
     </form>
     @endif
     @forelse($contact->notes as $note)

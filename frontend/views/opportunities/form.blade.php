@@ -29,7 +29,7 @@
         <label for="description">Descripción</label>
         <textarea id="description" name="description" rows="4" maxlength="5000">{{ old('description', $opportunity?->description) }}</textarea>
         @error('description')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-        <button class="button" type="submit">{{ $opportunity ? 'Guardar cambios' : 'Crear oportunidad' }}</button>
+        <button class="button button-primary" type="submit">{{ $opportunity ? 'Guardar cambios' : 'Crear oportunidad' }}</button>
     </form>
 </section>
 @endsection

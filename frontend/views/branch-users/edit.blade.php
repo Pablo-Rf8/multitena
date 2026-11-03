@@ -28,7 +28,7 @@
         @error('password')<p class="field-error" role="alert">{{ $message }}</p>@enderror
         <label for="password_confirmation">Confirmar contraseña</label>
         <input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password">
-        <button class="button" type="submit">Guardar usuario</button>
+        <button class="button button-primary" type="submit">Guardar usuario</button>
     </form>
 </section>
 @endsection

@@ -39,7 +39,7 @@
 
         <label for="admin_password_confirmation">Confirmar contraseña</label>
         <input id="admin_password_confirmation" name="admin_password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
-        <button class="button" type="submit">Crear empresa y sucursal</button>
+        <button class="button button-primary" type="submit">Crear empresa y sucursal</button>
     </form>
 </section>
 @endsection

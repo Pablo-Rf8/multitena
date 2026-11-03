@@ -34,7 +34,7 @@
 
         <label for="password_confirmation">Confirmar contraseña</label>
         <input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
-        <button class="button" type="submit">Crear administrador</button>
+        <button class="button button-primary" type="submit">Crear administrador</button>
     </form>
 </section>
 @endsection

@@ -29,7 +29,7 @@
         @error('password')<p class="field-error" role="alert">{{ $message }}</p>@enderror
         <label for="password_confirmation">Confirmar contraseña</label>
         <input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" @required(! $managedUser)>
-        <button class="button" type="submit">{{ $managedUser ? 'Guardar cambios' : 'Crear administrador' }}</button>
+        <button class="button button-primary" type="submit">{{ $managedUser ? 'Guardar cambios' : 'Crear administrador' }}</button>
     </form>
 </section>
 @endsection
