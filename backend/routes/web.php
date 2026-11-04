@@ -16,6 +16,8 @@ use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\AccessNotificationController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\CredentialController;
+use App\Http\Controllers\CredentialTemplateController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -50,6 +52,22 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     Route::get('/branding/logo', [BrandingController::class, 'logo'])->middleware('tenant_user')->name('branding.logo');
 
     Route::middleware('tenant_user')->group(function () {
+        Route::get('/credential-templates', [CredentialTemplateController::class, 'index'])->name('credential-templates.index');
+        Route::get('/credential-templates/create', [CredentialTemplateController::class, 'create'])->name('credential-templates.create');
+        Route::post('/credential-templates', [CredentialTemplateController::class, 'store'])->name('credential-templates.store');
+        Route::get('/credential-templates/{template}/edit', [CredentialTemplateController::class, 'edit'])->name('credential-templates.edit');
+        Route::put('/credential-templates/{template}', [CredentialTemplateController::class, 'update'])->name('credential-templates.update');
+        Route::delete('/credential-templates/{template}', [CredentialTemplateController::class, 'destroy'])->name('credential-templates.destroy');
+        Route::get('/credentials', [CredentialController::class, 'index'])->name('credentials.index');
+        Route::get('/credentials/create', [CredentialController::class, 'create'])->name('credentials.create');
+        Route::post('/credentials', [CredentialController::class, 'store'])->name('credentials.store');
+        Route::get('/credentials/{credential}', [CredentialController::class, 'show'])->name('credentials.show');
+        Route::get('/credentials/{credential}/edit', [CredentialController::class, 'edit'])->name('credentials.edit');
+        Route::put('/credentials/{credential}', [CredentialController::class, 'update'])->name('credentials.update');
+        Route::delete('/credentials/{credential}', [CredentialController::class, 'destroy'])->name('credentials.destroy');
+        Route::post('/credentials/{credential}/grants', [CredentialController::class, 'grant'])->name('credentials.grants.store');
+        Route::delete('/credentials/{credential}/grants/{user}', [CredentialController::class, 'revoke'])->name('credentials.grants.destroy');
+        Route::post('/credentials/{credential}/fields/{field}/reveal', [CredentialController::class, 'reveal'])->middleware('throttle:20,1')->name('credentials.reveal');
         Route::get('/contacts', [ContactController::class, 'index'])->middleware('crm_permission:contacts.read')->name('contacts.index');
         Route::get('/contacts/export', [ContactController::class, 'export'])->middleware('crm_permission:contacts.read')->name('contacts.export');
         Route::get('/contacts/create', [ContactController::class, 'create'])->middleware('crm_permission:contacts.write')->name('contacts.create');

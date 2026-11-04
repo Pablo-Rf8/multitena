@@ -51,6 +51,16 @@ class User extends Authenticatable
         return $this->hasMany(MobileSession::class);
     }
 
+    public function ownedCredentials(): HasMany
+    {
+        return $this->hasMany(Credential::class, 'owner_id');
+    }
+
+    public function credentialGrants(): HasMany
+    {
+        return $this->hasMany(CredentialGrant::class);
+    }
+
     protected function casts(): array
     {
         return [

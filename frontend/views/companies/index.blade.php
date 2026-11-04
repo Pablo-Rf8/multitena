@@ -18,6 +18,7 @@
         <div class="stat"><strong>{{ $branchCount }}</strong><span>{{ __('Sucursales') }}</span></div>
         <div class="stat"><strong>{{ $pendingCount }}</strong><span>{{ __('Solicitudes pendientes') }}</span></div>
     </div>
+    <p class="muted">{{ __('Gestión de Credenciales') }}: {{ $credentialTemplateCount }} {{ __('plantillas') }} · {{ $credentialCount }} {{ __('registros') }}. {{ __('Solo estadísticas; los datos y secretos pertenecen a cada empresa.') }}</p>
     <form method="get" action="{{ route('dashboard') }}" class="filter-bar">
         <label class="sr-only" for="company-search">{{ __('Buscar empresa') }}</label>
         <input id="company-search" name="q" type="search" value="{{ request('q') }}" placeholder="{{ __('Buscar empresa') }}">

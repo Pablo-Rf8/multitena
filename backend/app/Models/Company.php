@@ -41,6 +41,16 @@ class Company extends Model
         return $this->hasMany(Opportunity::class);
     }
 
+    public function credentialTemplates(): HasMany
+    {
+        return $this->hasMany(CredentialTemplate::class);
+    }
+
+    public function credentials(): HasMany
+    {
+        return $this->hasMany(Credential::class);
+    }
+
     public function logoUrl(bool $public = false): ?string
     {
         if ($this->logo_mode === 'demo') {

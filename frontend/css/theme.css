@@ -216,3 +216,15 @@ body.is-loading .loading-indicator { display: flex; }
 @media (max-width: 760px) { .app-shell { display: block; } .sidebar { position: fixed; z-index: 30; left: 0; top: 0; width: min(82vw, 300px); transform: translateX(-105%); transition: transform .18s ease; box-shadow: none; } body.sidebar-open .sidebar { transform: translateX(0); } body.sidebar-open .sidebar-scrim { display: block; position: fixed; z-index: 20; inset: 0; background: #0f172a80; } .sidebar-close { display: block; margin-left: auto; background: transparent; color: #fff; border: 0; font-size: 1.8rem; min-width: 44px; min-height: 44px; } .sidebar-top { display: flex; align-items: center; } .menu-toggle { display: block; } .header-inner { flex-wrap: nowrap; gap: .8rem; } .account { margin-left: auto; gap: .5rem; } .account a { display: none; } .page { padding: 1.25rem; } .panel { padding: 0; } .section-head { display: flex; flex-wrap: wrap; } .section-head .button { margin-bottom: 0; } }
 @media (max-width: 500px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat { padding: .9rem; } .stat strong { font-size: 1.45rem; } .header-context strong { font-size: .9rem; } .filter-bar > * { width: 100%; } .permission-list { grid-template-columns: 1fr; } .disclosure > summary small { display: none; } }
 @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+.credential-form { max-width: 48rem; }
+.credential-field-row { display: grid; grid-template-columns: minmax(12rem, 2fr) minmax(9rem, 1fr) auto auto; align-items: end; gap: .75rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.credential-field-row label { display: grid; gap: .4rem; }
+.credential-field-row .credential-check { display: flex; align-items: center; min-height: 42px; gap: .4rem; }
+.credential-check { display: inline-flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .9rem; }
+.credential-row-actions, .credential-secret { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.credential-details { max-width: 48rem; margin: 1.5rem 0 2rem; }
+.credential-detail { display: grid; gap: .35rem; padding: .9rem 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.credential-detail > strong { color: var(--ink); }
+.credential-sharing { margin: 2rem 0; }
+@media (max-width: 760px) { .credential-field-row { grid-template-columns: 1fr 1fr; } .credential-field-row label:first-child { grid-column: 1 / -1; } }
+@media (max-width: 500px) { .credential-field-row { grid-template-columns: 1fr; } .credential-field-row label:first-child { grid-column: auto; } }

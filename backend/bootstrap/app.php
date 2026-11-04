@@ -33,5 +33,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->dontFlash(['values']);
         // Laravel handles validation and authentication responses.
     })->create();

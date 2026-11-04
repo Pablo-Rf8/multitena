@@ -6,6 +6,8 @@ use App\Models\Company;
 use App\Models\Contact;
 use App\Models\Opportunity;
 use App\Models\User;
+use App\Models\Credential;
+use App\Models\CredentialTemplate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +37,8 @@ class DashboardController extends Controller
                 'userCount' => User::count(),
                 'branchCount' => DB::table('branches')->count(),
                 'pendingCount' => User::where('role', 'employee')->where('approval_status', 'pending')->count(),
+                'credentialCount' => Credential::count(),
+                'credentialTemplateCount' => CredentialTemplate::count(),
             ]);
         }
 

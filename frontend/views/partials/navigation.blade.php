@@ -12,6 +12,7 @@
         <a href="{{ route('employees.create') }}" @class(['current' => request()->routeIs('employees.create')]) @if(request()->routeIs('employees.create')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>{{ __('Registrar empleados') }}</a>
     @else
         <a href="{{ route('notifications.index') }}" @class(['current' => request()->routeIs('notifications.*')]) @if(request()->routeIs('notifications.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg>{{ __('Notificaciones') }}</a>
+        <a href="{{ route('credentials.index') }}" @class(['current' => request()->routeIs('credentials.*', 'credential-templates.*')]) @if(request()->routeIs('credentials.*', 'credential-templates.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Gestión de Credenciales') }}</a>
         @if($canContacts || $canOpportunities)
             <span class="nav-group-label">CRM</span>
             @if($canContacts)<a href="{{ route('contacts.index') }}" @class(['current' => request()->routeIs('contacts.*')]) @if(request()->routeIs('contacts.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>{{ __('Contactos') }}</a>@endif

@@ -15,6 +15,15 @@ Plataforma multitenencia de administración y CRM para empresas con una o varias
 - **Personal y sesiones:** el administrador de empresa registra, revisa, edita y suspende empleados; edita permisos de categorías y consulta o revoca sesiones web y móviles. Los eventos de acceso se muestran en el centro de notificaciones.
 - **Identidad visual:** la plataforma tiene un panel global azul oscuro. Cada empresa define tres colores y puede cargar su logotipo desde **Identidad visual**. El login muestra la marca al seleccionar el código de empresa y el panel usa la empresa autenticada. Pepsi y Coca-Cola DEMO reciben colores propios al migrar o sembrar datos.
 - **Empleados web:** un empleado aprobado puede entrar al panel web y ve únicamente el CRM de su sucursal según los permisos de su categoría. Las rutas comprueban los permisos además de ocultar acciones no autorizadas en la interfaz.
+- **Gestión de Credenciales:** el administrador de empresa crea plantillas con campos de texto, contraseña y URL; puede agregar, ordenar y marcar campos obligatorios. Los administradores de empresa y sucursal crean credenciales a partir de ellas. Cada credencial puede ser privada o compartida, con permisos individuales para ver, editar y revelar/copiar contraseñas. Los empleados solo ven las credenciales compartidas que se les asignaron. Las contraseñas se cifran en la base de datos y no aparecen en listados ni actividad.
+
+## Gestión de Credenciales
+
+Desde el menú lateral, abrí **Gestión de Credenciales**. El administrador de empresa usa **Administrar plantillas** para definir campos y luego **Nueva credencial** para registrar datos. El propietario concede permisos en el detalle de cada credencial. **Ver** permite consultar, **Modificable** permite editar y **Permitir mostrar y copiar contraseñas** habilita una acción adicional auditada. Los valores secretos se muestran solo tras pulsar **Mostrar** y se ocultan nuevamente después de 15 segundos.
+
+Por decisión de seguridad, las credenciales **privadas** solo se pueden asignar a administradores de la misma empresa; las **compartidas** también se pueden asignar a empleados aprobados. El acceso nunca se concede a toda la empresa de forma automática. Una plantilla utilizada no se puede eliminar, y un campo con datos no se puede quitar ni cambiar de tipo. El superadministrador solo ve conteos globales, sin datos ni secretos.
+
+La migración `2026_11_04_000000_create_credential_management.php` agrega cinco tablas nuevas; no modifica ni borra tablas existentes. En una instalación existente, respaldá SQLite antes de ejecutar `php artisan migrate`. La clave `APP_KEY` debe conservarse para poder descifrar contraseñas ya guardadas.
 
 ## Acceso por empresa
 

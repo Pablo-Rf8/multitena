@@ -10,6 +10,10 @@
         'opportunity.created' => __('Oportunidad creada'), 'opportunity.updated' => __('Oportunidad actualizada'),
         'note.created' => __('Nota agregada'),
         'password.changed' => __('Contraseña cambiada'), 'password.reset' => __('Contraseña restablecida'),
+        'credential_template.created' => __('Plantilla creada'), 'credential_template.updated' => __('Plantilla actualizada'), 'credential_template.deleted' => __('Plantilla eliminada'),
+        'credential.created' => __('Credencial creada'), 'credential.updated' => __('Credencial actualizada'), 'credential.deleted' => __('Credencial eliminada'),
+        'credential.viewed' => __('Credencial consultada'), 'credential.secret_revealed' => __('Contraseña mostrada'),
+        'credential.grant_updated' => __('Permiso de credencial actualizado'), 'credential.grant_revoked' => __('Permiso de credencial revocado'),
     ];
 @endphp
 @if($activity->isEmpty())
