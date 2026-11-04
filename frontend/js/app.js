@@ -72,13 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showMenu();
         passwordButton?.focus();
     });
-    dialog.querySelector('[data-account-settings]')?.addEventListener('click', event => {
-        if (new URL(event.currentTarget.href).pathname === window.location.pathname) {
-            const settings = document.getElementById('settings');
-            if (settings instanceof HTMLDetailsElement) settings.open = true;
-            dialog.close();
-        }
-    });
     dialog.querySelector('[data-account-close]')?.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', event => {
         if (event.target === dialog) dialog.close();

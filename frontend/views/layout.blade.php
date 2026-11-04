@@ -91,7 +91,6 @@
                 <nav class="account-menu" aria-label="Configuración de la empresa">
                     <p class="account-menu-label">Configuración</p>
                     <a href="{{ route('branding.edit') }}"><svg class="icon" aria-hidden="true"><use href="#icon-palette"/></svg><span>Preferencias<small>Colores y logotipo</small></span></a>
-                    <a href="{{ route('workforce.index') }}#settings" data-account-settings><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><span>Seguridad de acceso</span></a>
                     <a href="{{ route('activity.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>Actividad</span></a>
                 </nav>
             @endif

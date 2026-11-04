@@ -103,7 +103,7 @@ class TenantManagementTest extends TestCase
         ]);
 
         $this->actingAs($admin)->get('/dashboard')->assertOk()
-            ->assertSee('Preferencias')->assertSee('Seguridad de acceso')->assertSee('Actividad');
+            ->assertSee('Preferencias')->assertSee('Actividad')->assertDontSee('Seguridad de acceso');
 
         $this->actingAs($branchAdmin)->get('/dashboard')->assertOk()
             ->assertDontSee('Preferencias')->assertDontSee('Seguridad de acceso')->assertDontSee('Actividad');
