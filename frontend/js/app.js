@@ -16,10 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 document.addEventListener('DOMContentLoaded', () => {
     const dialog = document.querySelector('#confirm-dialog');
+    const accountDialog = document.querySelector('#account-dialog');
     const cancel = dialog?.querySelector('[data-confirm-cancel]');
     const accept = dialog?.querySelector('[data-confirm-accept]');
     let pendingSubmission = null;
     let approvedForm = null;
+    let returnToAccount = false;
 
     document.addEventListener('submit', event => {
         const form = event.target;
@@ -46,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
             accept.classList.toggle('button-danger', isDanger);
             accept.classList.toggle('button-primary', !isDanger);
             pendingSubmission = { form, submitter };
+            returnToAccount = Boolean(accountDialog?.open);
+            if (returnToAccount) accountDialog.close();
             dialog.showModal();
             cancel.focus();
             return;
@@ -62,8 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === dialog) dialog.close();
     });
     dialog?.addEventListener('close', () => {
+        if (pendingSubmission && returnToAccount) accountDialog.showModal();
         pendingSubmission?.submitter?.focus();
         pendingSubmission = null;
+        returnToAccount = false;
     });
     accept?.addEventListener('click', () => {
         const submission = pendingSubmission;
