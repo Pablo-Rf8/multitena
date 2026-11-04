@@ -34,7 +34,6 @@
     <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M14 7l5 5-5 5M8 12h11"/></symbol>
     <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-2.5 2.5-4 5.5-4 9s1.5 6.5 4 9M12 3c2.5 2.5 4 5.5 4 9s-1.5 6.5-4 9"/></symbol>
     <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
-    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
 </svg>
@@ -83,7 +82,7 @@
     </div>
 </div>
 @if($viewer)
-<dialog class="account-dialog" id="account-dialog" aria-labelledby="account-dialog-title" @if($errors->accountPassword->has('current_password') || $errors->accountPassword->has('password')) data-account-error="true" @endif>
+<dialog class="account-dialog" id="account-dialog" aria-labelledby="account-dialog-title" @if($errors->accountPassword->has('current_password') || $errors->accountPassword->has('password')) data-account-error="true" @endif @if(session('reopen_account')) data-reopen-account="true" @endif>
     <div class="account-dialog-inner">
         <div class="account-dialog-head">
             <span class="account-dialog-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
@@ -91,7 +90,7 @@
             <button type="button" class="dialog-close" data-account-close aria-label="{{ __('Cerrar ventana') }}"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
         <div data-account-menu>
-            <div class="account-language">@include('partials.language-switcher')</div>
+            <div class="account-language">@include('partials.language-switcher', ['inAccount' => true])</div>
             @if($viewer->role === 'company_admin')
                 <nav class="account-menu" aria-label="{{ __('Configuración de la empresa') }}">
                     <p class="account-menu-label">{{ __('Configuración') }}</p>

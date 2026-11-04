@@ -144,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dialog.dataset.accountError === 'true') {
         dialog.showModal();
         showPassword();
+    } else if (dialog.dataset.reopenAccount === 'true') {
+        dialog.showModal();
     }
 });
 

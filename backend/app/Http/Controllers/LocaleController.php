@@ -12,6 +12,9 @@ class LocaleController extends Controller
     {
         $data = $request->validate(['locale' => ['required', Rule::in(array_keys(config('locales.available')))]]);
         $request->session()->put('locale', $data['locale']);
+        if ($request->user() && $request->boolean('return_to_account')) {
+            $request->session()->flash('reopen_account', true);
+        }
 
         return back();
     }

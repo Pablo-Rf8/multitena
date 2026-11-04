@@ -14,11 +14,13 @@ class LocaleTest extends TestCase
     public function test_guest_can_switch_between_spanish_and_english(): void
     {
         $this->get('/login')->assertOk()->assertSee('<html lang="es">', false)->assertSee('Elegí tu empresa')
-            ->assertSee('data-language-picker', false)->assertSee('>Idioma</span>', false);
+            ->assertSee('data-language-picker', false)->assertSee('aria-label="Lenguaje: Español"', false)
+            ->assertSee('aria-label="Español Español"', false)->assertSee('aria-label="English Inglés"', false);
 
         $this->post('/locale', ['locale' => 'en'])->assertRedirect();
         $this->get('/login')->assertOk()->assertSee('<html lang="en">', false)->assertSee('Choose your company')->assertSee('Company code or work email')
-            ->assertSee('>Language</span>', false)->assertSee('aria-label="English"', false)->assertSee('aria-current="true"', false);
+            ->assertSee('aria-label="Language: English"', false)->assertSee('aria-label="Español Spanish"', false)
+            ->assertSee('aria-label="English English"', false)->assertSee('aria-current="true"', false);
 
         $this->post('/locale', ['locale' => 'es'])->assertRedirect();
         $this->get('/login')->assertOk()->assertSee('<html lang="es">', false)->assertSee('Elegí tu empresa');
@@ -40,7 +42,11 @@ class LocaleTest extends TestCase
         $this->post('/login/company', ['company_code' => $pepsi->code]);
         $this->post('/login', ['email' => 'admin@pepsi.test', 'password' => 'correct-password-123'])->assertRedirect('/dashboard');
         $this->get('/dashboard')->assertOk()->assertSee('Workspace')->assertSee('Pepsi (DEMO)')->assertDontSee('Coca-Cola (DEMO)')
-            ->assertSee('data-language-picker', false);
+            ->assertSee('class="account-language"', false)->assertSee('data-language-picker', false)->assertSee('aria-label="Language: English"', false);
+        $this->from('/dashboard')->post('/locale', ['locale' => 'es', 'return_to_account' => 1])->assertRedirect('/dashboard');
+        $this->get('/dashboard')->assertOk()->assertSee('aria-label="Lenguaje: Español"', false)->assertSee('data-reopen-account="true"', false)
+            ->assertSee('Pepsi (DEMO)')->assertDontSee('Coca-Cola (DEMO)');
+        $this->from('/dashboard')->post('/locale', ['locale' => 'en'])->assertRedirect('/dashboard');
         $this->post('/logout')->assertRedirect('/login');
         $this->get('/login')->assertOk()->assertSee('<html lang="en">', false)->assertSee('Email address');
 
