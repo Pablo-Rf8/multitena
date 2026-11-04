@@ -43,7 +43,7 @@ class BranchUserController extends Controller
         ]);
         $audit->record('user.created', $user, $company->id, ['role' => 'branch_admin', 'email' => $user->email]);
 
-        return redirect()->route('dashboard')->with('status', 'Administrador de sucursal creado.');
+        return redirect()->route('dashboard')->with('status', __('Administrador de sucursal creado.'));
     }
 
     public function edit(Request $request, int $user): View
@@ -74,7 +74,7 @@ class BranchUserController extends Controller
         $user->update($data);
         $audit->record('user.updated', $user, $company->id, ['email' => $user->email]);
 
-        return redirect()->route('dashboard')->with('status', 'Administrador actualizado.');
+        return redirect()->route('dashboard')->with('status', __('Administrador actualizado.'));
     }
 
     public function status(Request $request, int $user, Audit $audit): RedirectResponse
@@ -85,6 +85,6 @@ class BranchUserController extends Controller
         $user->update(['is_active' => $data['is_active'] === '1']);
         $audit->record($user->is_active ? 'user.activated' : 'user.suspended', $user, $company->id, ['email' => $user->email]);
 
-        return redirect()->route('dashboard')->with('status', $user->is_active ? 'Usuario activado.' : 'Usuario suspendido.');
+        return redirect()->route('dashboard')->with('status', $user->is_active ? __('Usuario activado.') : __('Usuario suspendido.'));
     }
 }

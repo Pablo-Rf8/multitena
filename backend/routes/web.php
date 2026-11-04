@@ -15,9 +15,11 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\WorkforceController;
 use App\Http\Controllers\BrandingController;
 use App\Http\Controllers\AccessNotificationController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/assets/app.css', fn () => response()->file(base_path('../frontend/css/app.css'), ['Content-Type' => 'text/css']))->name('assets.css');
 Route::get('/assets/app.js', fn () => response()->file(base_path('../frontend/js/app.js'), ['Content-Type' => 'text/javascript']))->name('assets.js');

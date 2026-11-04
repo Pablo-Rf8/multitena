@@ -37,7 +37,7 @@ class CompanyController extends Controller
 
         $audit->record('company.created', $company, $company->id, ['name' => $company->name]);
 
-        return redirect()->route('dashboard')->with('status', 'Se creó '.$company->name.' con su sucursal Central y administrador.');
+        return redirect()->route('dashboard')->with('status', __('Se creó :company con su sucursal Central y administrador.', ['company' => $company->name]));
     }
 
     public function show(Company $company): View
@@ -85,7 +85,7 @@ class CompanyController extends Controller
         CompanySetting::updateOrCreate(['company_id' => $company->id], ['email_domains' => $configuredDomains]);
         $audit->record('company.updated', $company, $company->id, ['name' => $company->name]);
 
-        return redirect()->route('companies.show', $company)->with('status', 'Empresa actualizada.');
+        return redirect()->route('companies.show', $company)->with('status', __('Empresa actualizada.'));
     }
 
     public function status(Request $request, Company $company, Audit $audit): RedirectResponse
@@ -94,6 +94,6 @@ class CompanyController extends Controller
         $company->update(['is_active' => $data['is_active'] === '1']);
         $audit->record($company->is_active ? 'company.activated' : 'company.suspended', $company, $company->id);
 
-        return redirect()->route('companies.show', $company)->with('status', $company->is_active ? 'Empresa activada.' : 'Empresa suspendida. Sus usuarios no podrán ingresar.');
+        return redirect()->route('companies.show', $company)->with('status', $company->is_active ? __('Empresa activada.') : __('Empresa suspendida. Sus usuarios no podrán ingresar.'));
     }
 }

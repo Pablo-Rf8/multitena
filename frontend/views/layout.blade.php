@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="{{ app()->getLocale() }}">
 @php
     $viewer = auth()->user();
     $isPlatform = $viewer?->role === 'super_admin' || (! $viewer && session('login_mode') === 'platform');
@@ -35,10 +35,10 @@
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
 </svg>
-<a class="skip-link" href="#main-content">Ir al contenido</a>
+<a class="skip-link" href="#main-content">{{ __('Ir al contenido') }}</a>
 <div class="{{ $viewer ? 'app-shell' : 'public-shell' }}">
     @if($viewer)
-        <aside class="sidebar" id="sidebar" aria-label="Navegación de {{ $brandName }}">
+        <aside class="sidebar" id="sidebar" aria-label="{{ __('Navegación de') }} {{ $brandName }}">
             <div class="sidebar-top">
                 <a class="brand" href="{{ route('dashboard') }}">
                     @if(!$isPlatform && $brandLogo)
@@ -46,14 +46,14 @@
                     @else
                         <span class="brand-mark" aria-hidden="true">{{ $isPlatform ? 'M' : mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>
                     @endif
-                    <span class="brand-copy"><strong>{{ $brandName }}</strong><small>{{ $isPlatform ? 'Administración global' : 'Espacio de trabajo' }}</small></span>
+                    <span class="brand-copy"><strong>{{ $brandName }}</strong><small>{{ $isPlatform ? __('Administración global') : __('Espacio de trabajo') }}</small></span>
                 </a>
-                <button class="sidebar-close" type="button" data-sidebar-close aria-label="Cerrar menú">×</button>
+                <button class="sidebar-close" type="button" data-sidebar-close aria-label="{{ __('Cerrar menú') }}">×</button>
             </div>
             @include('partials.navigation', ['viewer' => $viewer])
             <div class="sidebar-bottom">
                 <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog">
-                    <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> Mi cuenta
+                    <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> {{ __('Mi cuenta') }}
                     <span class="account-trigger-arrow" aria-hidden="true">⌃</span>
                 </button>
             </div>
@@ -63,15 +63,16 @@
     <div class="workspace">
         <header class="site-header">
             <div class="header-inner">
-                @if($viewer)<button class="menu-toggle" type="button" data-sidebar-open aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">☰</button>@endif
-                <div class="header-context"><span class="eyebrow">{{ $isPlatform ? 'Plataforma' : ($brandCompany?->name ?? 'Acceso') }}</span><strong>@yield('page-label', $viewer ? (request()->routeIs('dashboard') ? 'Panel de control' : trim(explode('·', $__env->yieldContent('title', 'Espacio de trabajo'))[0])) : 'Acceso seguro')</strong></div>
+                @if($viewer)<button class="menu-toggle" type="button" data-sidebar-open aria-controls="sidebar" aria-expanded="false" aria-label="{{ __('Abrir menú') }}">☰</button>@endif
+                <div class="header-context"><span class="eyebrow">{{ $isPlatform ? __('Plataforma') : ($brandCompany?->name ?? __('Acceso')) }}</span><strong>@yield('page-label', $viewer ? (request()->routeIs('dashboard') ? __('Panel de control') : trim(explode('·', $__env->yieldContent('title', __('Espacio de trabajo')))[0])) : __('Acceso seguro'))</strong></div>
                 @unless($viewer)
+                    @include('partials.language-switcher')
                     <span class="public-brand">@if($brandLogo)<img src="{{ $brandLogo }}" alt="" width="32" height="32">@endif {{ $brandName }}</span>
                 @endunless
             </div>
         </header>
         <main class="page" id="main-content">
-            <div class="loading-indicator" role="status" aria-live="polite">Guardando…</div>
+            <div class="loading-indicator" role="status" aria-live="polite">{{ __('Guardando…') }}</div>
             @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
             @if($errors->has('administrator') || $errors->has('branch'))<div class="notice notice-error" role="alert">{{ $errors->first('administrator') ?: $errors->first('branch') }}</div>@endif
             @yield('content')
@@ -84,47 +85,48 @@
         <div class="account-dialog-head">
             <span class="account-dialog-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
             <div class="account-dialog-person"><h2 id="account-dialog-title">{{ $viewer->name }}</h2><p class="muted">{{ $viewer->email }}</p></div>
-            <button type="button" class="dialog-close" data-account-close aria-label="Cerrar ventana"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
+            <button type="button" class="dialog-close" data-account-close aria-label="{{ __('Cerrar ventana') }}"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
         <div data-account-menu>
+            <div class="account-language"><p class="account-menu-label">{{ __('Idioma') }}</p>@include('partials.language-switcher')</div>
             @if($viewer->role === 'company_admin')
-                <nav class="account-menu" aria-label="Configuración de la empresa">
-                    <p class="account-menu-label">Configuración</p>
-                    <a href="{{ route('branding.edit') }}"><svg class="icon" aria-hidden="true"><use href="#icon-palette"/></svg><span>Preferencias<small>Colores y logotipo</small></span></a>
-                    <a href="{{ route('activity.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>Actividad</span></a>
+                <nav class="account-menu" aria-label="{{ __('Configuración de la empresa') }}">
+                    <p class="account-menu-label">{{ __('Configuración') }}</p>
+                    <a href="{{ route('branding.edit') }}"><svg class="icon" aria-hidden="true"><use href="#icon-palette"/></svg><span>{{ __('Preferencias') }}<small>{{ __('Colores y logotipo') }}</small></span></a>
+                    <a href="{{ route('activity.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>{{ __('Actividad') }}</span></a>
                 </nav>
             @endif
-            <button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Cambiar contraseña</button>
+            <button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>{{ __('Cambiar contraseña') }}</button>
             <div class="account-dialog-footer">
-                <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit" data-confirm="¿Seguro que quieres cerrar sesión?"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
+                <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit" data-confirm="{{ __('¿Seguro que quieres cerrar sesión?') }}"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>{{ __('Cerrar sesión') }}</button></form>
             </div>
         </div>
         <div class="account-password-panel" data-account-password-panel hidden>
-            <button class="account-back" type="button" data-account-password-back>← Volver</button>
-            <h3>Cambiar contraseña</h3>
+            <button class="account-back" type="button" data-account-password-back>← {{ __('Volver') }}</button>
+            <h3>{{ __('Cambiar contraseña') }}</h3>
             <form method="post" action="{{ route('password.update') }}" class="form-stack account-password-form">
                 @csrf @method('PUT')
-                <label for="modal-current-password">Contraseña actual</label>
+                <label for="modal-current-password">{{ __('Contraseña actual') }}</label>
                 <input id="modal-current-password" name="current_password" type="password" autocomplete="current-password" required>
                 @error('current_password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-                <label for="modal-new-password">Nueva contraseña</label>
+                <label for="modal-new-password">{{ __('Nueva contraseña') }}</label>
                 <input id="modal-new-password" name="password" type="password" minlength="12" autocomplete="new-password" required>
-                <p class="hint">Mínimo 12 caracteres.</p>
+                <p class="hint">{{ __('Mínimo 12 caracteres.') }}</p>
                 @error('password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-                <label for="modal-confirm-password">Confirmar contraseña</label>
+                <label for="modal-confirm-password">{{ __('Confirmar contraseña') }}</label>
                 <input id="modal-confirm-password" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
-                <button class="button button-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Guardar contraseña</button>
+                <button class="button button-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>{{ __('Guardar contraseña') }}</button>
             </form>
         </div>
     </div>
 </dialog>
 <dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message">
     <div class="confirm-dialog-inner">
-        <h2 id="confirm-dialog-title" data-confirm-title>Confirmar acción</h2>
+        <h2 id="confirm-dialog-title" data-confirm-title>{{ __('Confirmar acción') }}</h2>
         <p id="confirm-dialog-message" data-confirm-message></p>
         <div class="confirm-dialog-actions">
-            <button class="button button-ghost" type="button" data-confirm-cancel>Cancelar</button>
-            <button class="button button-primary" type="button" data-confirm-accept>Confirmar</button>
+            <button class="button button-ghost" type="button" data-confirm-cancel>{{ __('Cancelar') }}</button>
+            <button class="button button-primary" type="button" data-confirm-accept>{{ __('Confirmar') }}</button>
         </div>
     </div>
 </dialog>

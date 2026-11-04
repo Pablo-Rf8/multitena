@@ -26,7 +26,7 @@ class CompanyAdminController extends Controller
         $user = $company->users()->create($data + ['role' => 'company_admin']);
         $audit->record('user.created', $user, $company->id, ['role' => 'company_admin', 'email' => $user->email]);
 
-        return redirect()->route('companies.show', $company)->with('status', 'Administrador de empresa creado.');
+        return redirect()->route('companies.show', $company)->with('status', __('Administrador de empresa creado.'));
     }
 
     public function edit(Company $company, int $user): View
@@ -48,7 +48,7 @@ class CompanyAdminController extends Controller
         $user->update($data);
         $audit->record('user.updated', $user, $company->id, ['email' => $user->email]);
 
-        return redirect()->route('companies.show', $company)->with('status', 'Administrador actualizado.');
+        return redirect()->route('companies.show', $company)->with('status', __('Administrador actualizado.'));
     }
 
     public function status(Request $request, Company $company, int $user, Audit $audit): RedirectResponse
@@ -56,12 +56,12 @@ class CompanyAdminController extends Controller
         $user = $company->users()->where('role', 'company_admin')->findOrFail($user);
         $data = $request->validate(['is_active' => ['required', Rule::in(['0', '1'])]]);
         if ($data['is_active'] === '0' && $user->is_active && $company->users()->where('role', 'company_admin')->where('is_active', true)->count() <= 1) {
-            return back()->withErrors(['administrator' => 'La empresa necesita al menos un administrador activo.']);
+            return back()->withErrors(['administrator' => __('La empresa necesita al menos un administrador activo.')]);
         }
         $user->update(['is_active' => $data['is_active'] === '1']);
         $audit->record($user->is_active ? 'user.activated' : 'user.suspended', $user, $company->id, ['email' => $user->email]);
 
-        return redirect()->route('companies.show', $company)->with('status', $user->is_active ? 'Administrador activado.' : 'Administrador suspendido.');
+        return redirect()->route('companies.show', $company)->with('status', $user->is_active ? __('Administrador activado.') : __('Administrador suspendido.'));
     }
 
     private function validated(Request $request, Company $company, ?int $userId = null): array

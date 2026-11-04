@@ -41,7 +41,7 @@ class ContactController extends Controller
         $contact = $request->user()->company->contacts()->create($data);
         $audit->record('contact.created', $contact, $contact->company_id, ['name' => $contact->name]);
 
-        return redirect()->route('contacts.show', $contact)->with('status', 'Contacto creado.');
+        return redirect()->route('contacts.show', $contact)->with('status', __('Contacto creado.'));
     }
 
     public function show(Request $request, int $contact, CrmScope $scope): View
@@ -73,7 +73,7 @@ class ContactController extends Controller
             $audit->record('contact.updated', $contact, $contact->company_id, ['name' => $contact->name]);
         });
 
-        return redirect()->route('contacts.show', $contact)->with('status', 'Contacto actualizado.');
+        return redirect()->route('contacts.show', $contact)->with('status', __('Contacto actualizado.'));
     }
 
     public function export(Request $request, CrmScope $scope): StreamedResponse
@@ -82,11 +82,11 @@ class ContactController extends Controller
 
         return response()->streamDownload(function () use ($contacts): void {
             $stream = fopen('php://output', 'w');
-            fputcsv($stream, ['ID', 'Nombre', 'Organización', 'Correo', 'Teléfono', 'Estado', 'Sucursal', 'Origen', 'Demo']);
+            fputcsv($stream, ['ID', __('Nombre'), __('Organización'), __('Correo'), __('Teléfono'), __('Estado'), __('Sucursal'), __('Origen'), 'Demo']);
             foreach ($contacts as $contact) {
                 fputcsv($stream, array_map(self::csvCell(...), [
                     $contact->id, $contact->name, $contact->organization, $contact->email, $contact->phone,
-                    $contact->status, $contact->branch->name, $contact->source, $contact->is_demo ? 'Sí' : 'No',
+                    $contact->status, $contact->branch->name, $contact->source, $contact->is_demo ? __('Sí') : __('No'),
                 ]));
             }
             fclose($stream);

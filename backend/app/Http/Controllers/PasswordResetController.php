@@ -24,7 +24,7 @@ class PasswordResetController extends Controller
         $request->validate(['email' => ['required', 'email']]);
         Password::sendResetLink(['email' => strtolower(trim($request->input('email')))]);
 
-        return back()->with('status', 'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.');
+        return back()->with('status', __('Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.'));
     }
 
     public function resetForm(Request $request, string $token): View
@@ -47,9 +47,9 @@ class PasswordResetController extends Controller
         });
 
         if ($result !== Password::PASSWORD_RESET) {
-            return back()->withErrors(['email' => 'El enlace no es válido o ya venció. Solicitá uno nuevo.'])->onlyInput('email');
+            return back()->withErrors(['email' => __('El enlace no es válido o ya venció. Solicitá uno nuevo.')])->onlyInput('email');
         }
 
-        return redirect()->route('login')->with('status', 'Contraseña restablecida. Ya podés ingresar.');
+        return redirect()->route('login')->with('status', __('Contraseña restablecida. Ya podés ingresar.'));
     }
 }

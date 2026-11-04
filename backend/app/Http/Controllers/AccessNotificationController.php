@@ -16,7 +16,7 @@ class AccessNotificationController extends Controller
     public function read(Request $request, int $notification)
     {
         abort_unless($this->query($request)->where('id', $notification)->update(['read_at' => now(), 'updated_at' => now()]), 404);
-        return back()->with('status', 'Notificación leída.');
+        return back()->with('status', __('Notificación leída.'));
     }
 
     public function apiIndex(Request $request)
@@ -27,7 +27,7 @@ class AccessNotificationController extends Controller
     public function apiRead(Request $request, int $notification)
     {
         abort_unless($this->query($request)->where('id', $notification)->update(['read_at' => now(), 'updated_at' => now()]), 404);
-        return response()->json(['message' => 'Notificación leída.']);
+        return response()->json(['message' => __('Notificación leída.')]);
     }
 
     private function query(Request $request)

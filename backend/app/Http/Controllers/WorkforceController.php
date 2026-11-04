@@ -48,10 +48,10 @@ class WorkforceController extends Controller
             'password' => ['required', 'string', 'min:12', 'confirmed'],
             'branch_id' => ['required', Rule::exists('branches', 'id')->where('company_id', $company->id)->where('is_active', true)],
         ]);
-        if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $company->id])->email_domains ?? [])) return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
+        if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $company->id])->email_domains ?? [])) return back()->withErrors(['email' => __('Dominio no autorizado.')])->withInput();
         $employee = $this->createEmployee($company, $data['name'], $data['email'], $data['password'], $data['phone'] ?? null);
         $employee->update(['branch_id' => $data['branch_id']]);
-        return redirect()->route('workforce.index')->with('status', 'Empleado pendiente de aprobación.');
+        return redirect()->route('workforce.index')->with('status', __('Empleado pendiente de aprobación.'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -68,10 +68,10 @@ class WorkforceController extends Controller
         $company = Company::findOrFail($data['company_id']);
         $settings = CompanySetting::firstOrCreate(['company_id' => $company->id]);
         if (! $this->allowedDomain($data['email'], $settings->email_domains ?? [])) {
-            return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
+            return back()->withErrors(['email' => __('Dominio no autorizado.')])->withInput();
         }
         $user = $this->createEmployee($company, $data['name'], $data['email'], $data['password'], $data['phone'] ?? null);
-        return back()->with('status', 'Empleado '.$user->email.' pendiente de aprobación.');
+        return back()->with('status', __('Empleado :email pendiente de aprobación.', ['email' => $user->email]));
     }
 
     public function import(Request $request): RedirectResponse
@@ -86,26 +86,26 @@ class WorkforceController extends Controller
         $handle = fopen($data['file']->getRealPath(), 'rb');
         if (fgetcsv($handle) !== ['name', 'email', 'password']) {
             fclose($handle);
-            return back()->withErrors(['file' => 'Encabezado requerido: name,email,password']);
+            return back()->withErrors(['file' => __('Encabezado requerido: name,email,password')]);
         }
         $count = 0;
         $errors = [];
         $line = 1;
         while (($row = fgetcsv($handle)) !== false) {
             $line++;
-            if ($line > 1001) { $errors[] = 'Máximo 1000 filas.'; break; }
-            if (count($row) !== 3) { $errors[] = "Fila $line: columnas incorrectas."; continue; }
+            if ($line > 1001) { $errors[] = __('Máximo 1000 filas.'); break; }
+            if (count($row) !== 3) { $errors[] = __('Fila :line: columnas incorrectas.', ['line' => $line]); continue; }
             [$name, $email, $password] = $row;
             $email = strtolower(trim($email));
             if (! trim($name) || ! filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 12 || User::where('email', $email)->exists() || ! $this->allowedDomain($email, $settings->email_domains ?? [])) {
-                $errors[] = "Fila $line: datos inválidos o correo duplicado.";
+                $errors[] = __('Fila :line: datos inválidos o correo duplicado.', ['line' => $line]);
                 continue;
             }
             $this->createEmployee($company, trim($name), $email, $password);
             $count++;
         }
         fclose($handle);
-        return back()->with('status', "$count empleados importados.")->with('import_errors', $errors);
+        return back()->with('status', __(':count empleados importados.', ['count' => $count]))->with('import_errors', $errors);
     }
 
     private function createEmployee(Company $company, string $name, string $email, string $password, ?string $phone = null): User
@@ -132,7 +132,7 @@ class WorkforceController extends Controller
         $user->update(['approval_status' => $data['decision'], 'category_id' => $data['category_id'] ?? null, 'reviewed_by' => $request->user()->id, 'reviewed_at' => now()]);
         DB::table('access_notifications')->where('company_id', $user->company_id)->where('kind', 'employee_pending')->where('subject_id', $user->id)->update(['read_at' => now()]);
         AccessNotice::user($user, 'employee_'.$data['decision'], $user->id, 'Solicitud '.($data['decision'] === 'approved' ? 'aprobada' : 'rechazada'));
-        return back()->with('status', 'Solicitud revisada.');
+        return back()->with('status', __('Solicitud revisada.'));
     }
 
     public function editEmployee(Request $request, int $employee): View
@@ -154,11 +154,11 @@ class WorkforceController extends Controller
         ]);
         $data['email'] = strtolower(trim($data['email']));
         if (! $this->allowedDomain($data['email'], CompanySetting::firstOrCreate(['company_id' => $user->company_id])->email_domains ?? [])) {
-            return back()->withErrors(['email' => 'Dominio no autorizado.'])->withInput();
+            return back()->withErrors(['email' => __('Dominio no autorizado.')])->withInput();
         }
         $user->update($data);
         if (! $user->is_active) $this->revokeEmployeeSessions($user, 'account_suspended');
-        return redirect()->route('workforce.index')->with('status', 'Empleado actualizado.');
+        return redirect()->route('workforce.index')->with('status', __('Empleado actualizado.'));
     }
 
     public function employeeStatus(Request $request, int $employee): RedirectResponse
@@ -167,7 +167,7 @@ class WorkforceController extends Controller
         $data = $request->validate(['is_active' => ['required', 'boolean']]);
         $user->update($data);
         if (! $user->is_active) $this->revokeEmployeeSessions($user, 'account_suspended');
-        return back()->with('status', 'Estado del empleado actualizado.');
+        return back()->with('status', __('Estado del empleado actualizado.'));
     }
 
     private function revokeEmployeeSessions(User $user, string $reason): void
@@ -182,7 +182,7 @@ class WorkforceController extends Controller
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:100', Rule::unique('categories')->where('company_id', $request->user()->company_id)], 'permissions' => ['array'], 'permissions.*' => [Rule::in(self::PERMISSIONS)]]);
         Category::create(['company_id' => $request->user()->company_id, 'name' => $data['name'], 'permissions' => $data['permissions'] ?? []]);
-        return back()->with('status', 'Categoría creada.');
+        return back()->with('status', __('Categoría creada.'));
     }
 
     public function updateCategory(Request $request, int $category): RedirectResponse
@@ -193,7 +193,7 @@ class WorkforceController extends Controller
         if (! $category->is_active) {
             foreach (User::where('category_id', $category->id)->get() as $user) $this->revokeEmployeeSessions($user, 'category_disabled');
         }
-        return back()->with('status', 'Categoría actualizada.');
+        return back()->with('status', __('Categoría actualizada.'));
     }
 
     public function deleteCategory(Request $request, int $category): RedirectResponse
@@ -201,7 +201,7 @@ class WorkforceController extends Controller
         $category = Category::where('company_id', $request->user()->company_id)->findOrFail($category);
         abort_if(User::where('category_id', $category->id)->exists(), 409, 'Desasigná los empleados antes de eliminar la categoría.');
         $category->delete();
-        return back()->with('status', 'Categoría eliminada.');
+        return back()->with('status', __('Categoría eliminada.'));
     }
 
     public function assignCategory(Request $request, int $employee): RedirectResponse
@@ -209,7 +209,7 @@ class WorkforceController extends Controller
         $user = User::where('company_id', $request->user()->company_id)->where('role', 'employee')->findOrFail($employee);
         $data = $request->validate(['category_id' => ['nullable', Rule::exists('categories', 'id')->where('company_id', $user->company_id)->where('is_active', true)]]);
         $user->update(['category_id' => $data['category_id'] ?? null]);
-        return back()->with('status', 'Categoría actualizada.');
+        return back()->with('status', __('Categoría actualizada.'));
     }
 
     public function settings(Request $request, \App\Services\CompanyDomains $companyDomains): RedirectResponse
@@ -228,7 +228,7 @@ class WorkforceController extends Controller
             'require_device_approval' => $data['require_device_approval'],
             'token_lifetime_hours' => $data['token_lifetime_hours'],
         ]);
-        return back()->with('status', 'Configuración guardada.');
+        return back()->with('status', __('Configuración guardada.'));
     }
 
     public function device(Request $request, int $device): RedirectResponse
@@ -244,7 +244,7 @@ class WorkforceController extends Controller
             }
         }
         AccessNotice::user(User::findOrFail($device->user_id), 'device_'.$data['status'], $device->id, 'Dispositivo '.($data['status'] === 'approved' ? 'autorizado' : 'revocado'));
-        return back()->with('status', 'Dispositivo actualizado.');
+        return back()->with('status', __('Dispositivo actualizado.'));
     }
 
     public function endSession(Request $request, int $session): RedirectResponse
@@ -253,7 +253,7 @@ class WorkforceController extends Controller
         abort_unless($session->status === 'active', 409);
         if ($session->token_id) DB::table('personal_access_tokens')->where('id', $session->token_id)->delete();
         $session->update(['status' => 'revoked', 'end_reason' => 'admin_revoked', 'ended_at' => now()]);
-        return back()->with('status', 'Sesión finalizada.');
+        return back()->with('status', __('Sesión finalizada.'));
     }
 
     private function allowedDomain(string $email, array $domains): bool

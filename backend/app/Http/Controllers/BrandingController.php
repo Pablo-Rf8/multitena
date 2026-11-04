@@ -26,7 +26,7 @@ class BrandingController extends Controller
         ]);
         $company = $request->user()->company;
         if (($data['logo_mode'] ?? null) === 'demo' && ! in_array($company->slug, ['pepsi-demo', 'coca-cola-demo'], true)) {
-            return back()->withErrors(['logo_mode' => 'Esta empresa no tiene logotipo DEMO.']);
+            return back()->withErrors(['logo_mode' => __('Esta empresa no tiene logotipo DEMO.')]);
         }
         if ($request->hasFile('logo')) {
             $path = $request->file('logo')->store('company-logos', 'local');
@@ -36,7 +36,7 @@ class BrandingController extends Controller
         unset($data['logo']);
         $company->update($data);
 
-        return back()->with('status', 'Identidad visual actualizada.');
+        return back()->with('status', __('Identidad visual actualizada.'));
     }
 
     public function logo(Request $request): BinaryFileResponse

@@ -25,6 +25,6 @@ class PasswordController extends Controller
         $audit->record('password.changed', $request->user(), $request->user()->company_id);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard')->with('status', 'Contraseña actualizada.');
+        return redirect()->route('dashboard')->with('status', __('Contraseña actualizada.'));
     }
 }

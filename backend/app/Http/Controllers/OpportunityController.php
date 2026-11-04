@@ -44,7 +44,7 @@ class OpportunityController extends Controller
         $opportunity = $contact->opportunities()->create($this->attributes($data, $contact->company_id, $contact->branch_id));
         $audit->record('opportunity.created', $opportunity, $contact->company_id, ['title' => $opportunity->title]);
 
-        return redirect()->route('contacts.show', $contact)->with('status', 'Oportunidad creada.');
+        return redirect()->route('contacts.show', $contact)->with('status', __('Oportunidad creada.'));
     }
 
     public function edit(Request $request, int $opportunity, CrmScope $scope): View
@@ -61,7 +61,7 @@ class OpportunityController extends Controller
         $opportunity->update($this->attributes($data, $opportunity->company_id, $opportunity->branch_id));
         $audit->record('opportunity.updated', $opportunity, $opportunity->company_id, ['stage' => $opportunity->stage, 'title' => $opportunity->title]);
 
-        return redirect()->route('contacts.show', $opportunity->contact_id)->with('status', 'Oportunidad actualizada.');
+        return redirect()->route('contacts.show', $opportunity->contact_id)->with('status', __('Oportunidad actualizada.'));
     }
 
     public function export(Request $request, CrmScope $scope): StreamedResponse
@@ -71,12 +71,12 @@ class OpportunityController extends Controller
 
         return response()->streamDownload(function () use ($items, $currency): void {
             $stream = fopen('php://output', 'w');
-            fputcsv($stream, ['ID', 'Título', 'Contacto', 'Sucursal', 'Etapa', 'Monto', 'Moneda', 'Cierre estimado', 'Demo']);
+            fputcsv($stream, ['ID', __('Título'), __('Contacto'), __('Sucursal'), __('Etapa'), __('Monto'), __('Moneda'), __('Cierre estimado'), 'Demo']);
             foreach ($items as $item) {
                 fputcsv($stream, array_map(self::csvCell(...), [
                     $item->id, $item->title, $item->contact->name, $item->branch->name,
                     $item->stage, number_format($item->amount_cents / 100, 2, '.', ''), $currency,
-                    $item->expected_close_on?->format('Y-m-d'), $item->is_demo ? 'Sí' : 'No',
+                    $item->expected_close_on?->format('Y-m-d'), $item->is_demo ? __('Sí') : __('No'),
                 ]));
             }
             fclose($stream);

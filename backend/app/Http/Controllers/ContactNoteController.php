@@ -16,6 +16,6 @@ class ContactNoteController extends Controller
         $note = $contact->notes()->create(['body' => trim($data['body']), 'author_id' => $request->user()->id]);
         $audit->record('note.created', $note, $contact->company_id, ['contact_id' => $contact->id]);
 
-        return redirect()->route('contacts.show', $contact)->with('status', 'Nota agregada.');
+        return redirect()->route('contacts.show', $contact)->with('status', __('Nota agregada.'));
     }
 }

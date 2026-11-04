@@ -145,6 +145,17 @@ td { color: var(--ink); }
 .public-shell .page { max-width: 1100px; }
 .public-brand { color: var(--brand-primary); font-weight: 650; display: inline-flex; align-items: center; gap: .5rem; }
 .public-brand img { width: 32px; height: 32px; object-fit: contain; }
+.language-switcher { display: inline-flex; align-items: center; gap: .15rem; margin: 0; padding: .2rem; border: 1px solid var(--line); border-radius: .5rem; background: #fff; }
+.language-switcher button { min-height: 34px; padding: .4rem .65rem; border: 0; border-radius: .35rem; background: transparent; color: var(--muted); font-size: .82rem; font-weight: 600; cursor: pointer; }
+.language-switcher button:hover { color: var(--brand-primary); background: #f8fafc; }
+.language-switcher button[aria-current="true"] { color: var(--brand-primary); background: #f1f5f9; }
+.language-switcher button:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
+.public-shell .language-switcher { margin-left: auto; }
+.account-language { padding: .3rem 0 .8rem; }
+.account-language .account-menu-label { padding-top: 0; }
+.account-language .language-switcher { width: 100%; }
+.account-language .language-switcher button { flex: 1; }
+@media (max-width: 500px) { .public-shell .public-brand { display: none; } .public-shell .header-inner { flex-wrap: wrap; } }
 .login-identity { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
 .login-identity h1 { margin: 0; }
 .login-logo { width: 64px; height: 64px; object-fit: contain; flex: none; }
