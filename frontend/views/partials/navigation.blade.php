@@ -14,13 +14,8 @@
             @if($canOpportunities)<a href="{{ route('opportunities.index') }}" @class(['current' => request()->routeIs('opportunities.*')]) @if(request()->routeIs('opportunities.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-briefcase"/></svg>Oportunidades</a>@endif
         @endif
         @if($viewer->role === 'company_admin')
-            <span class="nav-group-label">Administración</span>
+            <span class="nav-group-label">Equipo</span>
             <a href="{{ route('workforce.index') }}" @class(['current' => request()->routeIs('workforce.*')]) @if(request()->routeIs('workforce.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>Personal y acceso</a>
-            <details class="nav-more" @if(request()->routeIs('branding.*', 'activity.*')) open @endif>
-                <summary><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg>Configuración</summary>
-                <a href="{{ route('branding.edit') }}" @class(['current' => request()->routeIs('branding.*')])><svg class="icon" aria-hidden="true"><use href="#icon-palette"/></svg>Identidad visual</a>
-                <a href="{{ route('activity.index') }}" @class(['current' => request()->routeIs('activity.*')])><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg>Actividad</a>
-            </details>
         @endif
     @endif
 </nav>

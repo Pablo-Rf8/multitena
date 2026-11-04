@@ -84,12 +84,29 @@ class TenantManagementTest extends TestCase
 
         $this->actingAs($user)->get('/dashboard')->assertOk()
             ->assertSee('data-account-open')->assertSee('id="account-dialog"', false)
+            ->assertSee('Mi cuenta')->assertSee('data-account-password-panel hidden', false)
             ->assertSee('Cambiar contraseña')->assertSee('Cerrar sesión');
 
         $this->followingRedirects()->from('/dashboard')->actingAs($user)->put('/account/password', [
             'current_password' => 'incorrect', 'password' => 'new-password-456',
             'password_confirmation' => 'new-password-456',
         ])->assertOk()->assertSee('data-account-error="true"', false);
+    }
+
+    public function test_company_preferences_and_activity_only_appear_for_company_admin(): void
+    {
+        $company = app(CreateCompany::class)->handle('Pepsi', 'admin@pepsi.test', 'correct-horse-battery');
+        $admin = $company->users()->firstOrFail();
+        $branchAdmin = $company->users()->create([
+            'name' => 'Ana', 'email' => 'ana@pepsi.test', 'password' => 'another-secure-password',
+            'role' => 'branch_admin', 'branch_id' => $company->branches()->firstOrFail()->id,
+        ]);
+
+        $this->actingAs($admin)->get('/dashboard')->assertOk()
+            ->assertSee('Preferencias')->assertSee('Seguridad de acceso')->assertSee('Actividad');
+
+        $this->actingAs($branchAdmin)->get('/dashboard')->assertOk()
+            ->assertDontSee('Preferencias')->assertDontSee('Seguridad de acceso')->assertDontSee('Actividad');
     }
 
     public function test_demo_command_is_labeled_and_does_not_overwrite_existing_records(): void

@@ -24,6 +24,7 @@
     <symbol id="icon-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7"/></symbol>
     <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></symbol>
     <symbol id="icon-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2zM17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></symbol>
+    <symbol id="icon-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></symbol>
     <symbol id="icon-briefcase" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13c5 3 13 3 18 0"/></symbol>
     <symbol id="icon-shield" viewBox="0 0 24 24"><path d="m12 2 9 4v6c0 5-3.5 8-9 10-5.5-2-9-5-9-10V6zM9 12l2 2 4-4"/></symbol>
     <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/></symbol>
@@ -51,10 +52,9 @@
             </div>
             @include('partials.navigation', ['viewer' => $viewer])
             <div class="sidebar-bottom">
-                <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog" aria-label="Abrir opciones de la cuenta de {{ $viewer->name }}">
-                    <span class="account-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
-                    <span class="account-identity"><strong>{{ $viewer->name }}</strong><small>{{ ['super_admin'=>'Admin global','company_admin'=>'Admin de empresa','branch_admin'=>'Admin de sucursal','employee'=>'Empleado'][$viewer->role] ?? $viewer->role }}</small></span>
-                    <svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg>
+                <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> Mi cuenta
+                    <span class="account-trigger-arrow" aria-hidden="true">⌃</span>
                 </button>
             </div>
         </aside>
@@ -82,24 +82,40 @@
 <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-dialog-title" @if($errors->accountPassword->has('current_password') || $errors->accountPassword->has('password')) data-account-error="true" @endif>
     <div class="account-dialog-inner">
         <div class="account-dialog-head">
-            <div><p class="eyebrow">Mi cuenta</p><h2 id="account-dialog-title">Cambiar contraseña</h2><p class="muted">{{ $viewer->email }}</p></div>
+            <span class="account-dialog-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
+            <div class="account-dialog-person"><h2 id="account-dialog-title">{{ $viewer->name }}</h2><p class="muted">{{ $viewer->email }}</p></div>
             <button type="button" class="dialog-close" data-account-close aria-label="Cerrar ventana"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
-        <form method="post" action="{{ route('password.update') }}" class="form-stack account-password-form">
-            @csrf @method('PUT')
-            <label for="modal-current-password">Contraseña actual</label>
-            <input id="modal-current-password" name="current_password" type="password" autocomplete="current-password" required>
-            @error('current_password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-            <label for="modal-new-password">Nueva contraseña</label>
-            <input id="modal-new-password" name="password" type="password" minlength="12" autocomplete="new-password" required>
-            <p class="hint">Mínimo 12 caracteres.</p>
-            @error('password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
-            <label for="modal-confirm-password">Confirmar contraseña</label>
-            <input id="modal-confirm-password" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
-            <button class="button button-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Guardar contraseña</button>
-        </form>
-        <div class="account-dialog-footer">
-            <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
+        <div data-account-menu>
+            @if($viewer->role === 'company_admin')
+                <nav class="account-menu" aria-label="Configuración de la empresa">
+                    <p class="account-menu-label">Configuración</p>
+                    <a href="{{ route('branding.edit') }}"><svg class="icon" aria-hidden="true"><use href="#icon-palette"/></svg><span>Preferencias<small>Colores y logotipo</small></span></a>
+                    <a href="{{ route('workforce.index') }}#settings" data-account-settings><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg><span>Seguridad de acceso</span></a>
+                    <a href="{{ route('activity.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>Actividad</span></a>
+                </nav>
+            @endif
+            <button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Cambiar contraseña</button>
+            <div class="account-dialog-footer">
+                <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
+            </div>
+        </div>
+        <div class="account-password-panel" data-account-password-panel hidden>
+            <button class="account-back" type="button" data-account-password-back>← Volver</button>
+            <h3>Cambiar contraseña</h3>
+            <form method="post" action="{{ route('password.update') }}" class="form-stack account-password-form">
+                @csrf @method('PUT')
+                <label for="modal-current-password">Contraseña actual</label>
+                <input id="modal-current-password" name="current_password" type="password" autocomplete="current-password" required>
+                @error('current_password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+                <label for="modal-new-password">Nueva contraseña</label>
+                <input id="modal-new-password" name="password" type="password" minlength="12" autocomplete="new-password" required>
+                <p class="hint">Mínimo 12 caracteres.</p>
+                @error('password', 'accountPassword')<p class="field-error" role="alert">{{ $message }}</p>@enderror
+                <label for="modal-confirm-password">Confirmar contraseña</label>
+                <input id="modal-confirm-password" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
+                <button class="button button-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Guardar contraseña</button>
+            </form>
         </div>
     </div>
 </dialog>
