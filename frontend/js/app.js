@@ -155,3 +155,20 @@ document.addEventListener('DOMContentLoaded', () => {
     revealSection();
     window.addEventListener('hashchange', revealSection);
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const pickers = document.querySelectorAll('[data-language-picker]');
+    document.addEventListener('click', event => {
+        pickers.forEach(picker => {
+            if (picker.open && !picker.contains(event.target)) picker.open = false;
+        });
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const picker = [...pickers].find(item => item.open);
+        if (!picker) return;
+        event.preventDefault();
+        picker.open = false;
+        picker.querySelector('summary')?.focus();
+    });
+});

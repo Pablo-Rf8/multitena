@@ -13,10 +13,12 @@ class LocaleTest extends TestCase
 
     public function test_guest_can_switch_between_spanish_and_english(): void
     {
-        $this->get('/login')->assertOk()->assertSee('<html lang="es">', false)->assertSee('Elegí tu empresa');
+        $this->get('/login')->assertOk()->assertSee('<html lang="es">', false)->assertSee('Elegí tu empresa')
+            ->assertSee('data-language-picker', false)->assertSee('>Idioma</span>', false);
 
         $this->post('/locale', ['locale' => 'en'])->assertRedirect();
-        $this->get('/login')->assertOk()->assertSee('<html lang="en">', false)->assertSee('Choose your company')->assertSee('Company code or work email');
+        $this->get('/login')->assertOk()->assertSee('<html lang="en">', false)->assertSee('Choose your company')->assertSee('Company code or work email')
+            ->assertSee('>Language</span>', false)->assertSee('aria-label="English"', false)->assertSee('aria-current="true"', false);
 
         $this->post('/locale', ['locale' => 'es'])->assertRedirect();
         $this->get('/login')->assertOk()->assertSee('<html lang="es">', false)->assertSee('Elegí tu empresa');
@@ -37,7 +39,8 @@ class LocaleTest extends TestCase
         $this->post('/locale', ['locale' => 'en']);
         $this->post('/login/company', ['company_code' => $pepsi->code]);
         $this->post('/login', ['email' => 'admin@pepsi.test', 'password' => 'correct-password-123'])->assertRedirect('/dashboard');
-        $this->get('/dashboard')->assertOk()->assertSee('Workspace')->assertSee('Pepsi (DEMO)')->assertDontSee('Coca-Cola (DEMO)');
+        $this->get('/dashboard')->assertOk()->assertSee('Workspace')->assertSee('Pepsi (DEMO)')->assertDontSee('Coca-Cola (DEMO)')
+            ->assertSee('data-language-picker', false);
         $this->post('/logout')->assertRedirect('/login');
         $this->get('/login')->assertOk()->assertSee('<html lang="en">', false)->assertSee('Email address');
 

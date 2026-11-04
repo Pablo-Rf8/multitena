@@ -16,8 +16,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', $brandName)</title>
     <link rel="stylesheet" href="{{ route('assets.css') }}">
-    <link rel="stylesheet" href="{{ route('assets.theme') }}">
-    <script src="{{ route('assets.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ route('assets.theme') }}?v={{ filemtime(base_path('../frontend/css/theme.css')) }}">
+    <script src="{{ route('assets.js') }}?v={{ filemtime(base_path('../frontend/js/app.js')) }}" defer></script>
 </head>
 <body class="{{ $isPlatform ? 'theme-platform' : ($brandCompany ? 'theme-tenant' : 'theme-public') }}" style="{{ $themeStyle }}">
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -32,6 +32,9 @@
     <symbol id="icon-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
     <symbol id="icon-key" viewBox="0 0 24 24"><circle cx="7" cy="15" r="4"/><path d="m10 12 9-9 2 2-2 2 2 2-3 3-2-2-3 3"/></symbol>
     <symbol id="icon-logout" viewBox="0 0 24 24"><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h5M14 7l5 5-5 5M8 12h11"/></symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-2.5 2.5-4 5.5-4 9s1.5 6.5 4 9M12 3c2.5 2.5 4 5.5 4 9s-1.5 6.5-4 9"/></symbol>
+    <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
     <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="icon-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"/></symbol>
 </svg>
@@ -88,7 +91,7 @@
             <button type="button" class="dialog-close" data-account-close aria-label="{{ __('Cerrar ventana') }}"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
         <div data-account-menu>
-            <div class="account-language"><p class="account-menu-label">{{ __('Idioma') }}</p>@include('partials.language-switcher')</div>
+            <div class="account-language">@include('partials.language-switcher')</div>
             @if($viewer->role === 'company_admin')
                 <nav class="account-menu" aria-label="{{ __('Configuración de la empresa') }}">
                     <p class="account-menu-label">{{ __('Configuración') }}</p>

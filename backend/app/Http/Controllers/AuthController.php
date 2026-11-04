@@ -89,7 +89,7 @@ class AuthController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         $companyId = $request->user()?->company_id;
-        $locale = $request->session()->get('locale', 'es');
+        $locale = $request->session()->get('locale', config('locales.default'));
         MobileSession::where('id', $request->session()->get('access_session_id'))->where('status', 'active')->update(['status' => 'closed', 'ended_at' => now(), 'end_reason' => 'logout']);
         Auth::logout();
         $request->session()->invalidate();
