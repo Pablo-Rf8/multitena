@@ -8,14 +8,21 @@ return new class extends Migration
     public function up(): void
     {
         foreach (['pepsi-demo' => 'pepsi-demo.test', 'coca-cola-demo' => 'coca-cola-demo.test'] as $slug => $domain) {
-            $company = DB::table('companies')->where('slug', $slug)->first();
-            if (! $company) continue;
+            $company = DB::table('companies')->where('slug', $slug)->where('is_demo', true)->first();
+            if (! $company) {
+                continue;
+            }
 
             $settings = DB::table('company_settings')->where('company_id', $company->id)->first();
-            if ($settings && $settings->email_domains && $settings->email_domains !== '[]') continue;
+            $configured = json_decode($settings?->email_domains ?? '[]', true);
+            if (! is_array($configured) || count($configured) > 0) {
+                continue;
+            }
             $claimed = DB::table('company_settings')->where('company_id', '!=', $company->id)
-                ->whereRaw("EXISTS (SELECT 1 FROM json_each(company_settings.email_domains) WHERE value = ?)", [$domain])->exists();
-            if ($claimed) continue;
+                ->whereRaw("EXISTS (SELECT 1 FROM json_each(CASE WHEN json_valid(company_settings.email_domains) THEN company_settings.email_domains ELSE '[]' END) WHERE lower(value) = ?)", [$domain])->exists();
+            if ($claimed) {
+                continue;
+            }
 
             if ($settings) {
                 DB::table('company_settings')->where('company_id', $company->id)->update(['email_domains' => json_encode([$domain]), 'updated_at' => now()]);
