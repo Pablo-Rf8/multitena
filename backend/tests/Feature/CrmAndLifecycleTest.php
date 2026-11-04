@@ -128,13 +128,15 @@ class CrmAndLifecycleTest extends TestCase
             'title' => 'Venta Visible', 'stage' => 'new', 'amount_cents' => 10000,
         ]);
 
-        $this->actingAs($super)->get('/dashboard')->assertOk()->assertSee('Pepsi');
+        $this->actingAs($super)->get('/dashboard')->assertOk()->assertSee('Pepsi')
+            ->assertSee('Nueva empresa')->assertSee('Registrar empleados');
         $this->actingAs($super)->get('/companies/'.$company->id)->assertOk()->assertSee('Administradores de empresa');
         $this->actingAs($super)->get('/companies/'.$company->id.'/edit')->assertOk();
         $this->actingAs($super)->get('/companies/'.$company->id.'/admins/create')->assertOk();
         $this->actingAs($super)->get('/companies/'.$company->id.'/admins/'.$admin->id.'/edit')->assertOk();
 
-        $this->actingAs($admin)->get('/dashboard')->assertOk()->assertSee('Contactos');
+        $this->actingAs($admin)->get('/dashboard')->assertOk()->assertSee('Contactos')
+            ->assertDontSee('Registrar empleados');
         $this->actingAs($admin)->get('/branches/'.$branch->id.'/edit')->assertOk();
         $this->actingAs($admin)->get('/contacts/create')->assertOk();
         $this->actingAs($admin)->get('/contacts/'.$contact->id.'/edit')->assertOk();
