@@ -43,7 +43,7 @@
                             <td>{{ $company->branches_count }}</td>
                             <td>{{ $company->users_count }}</td>
                             <td>{{ $company->contacts_count }} contactos · {{ $company->opportunities_count }} oportunidades</td>
-                            <td><a href="{{ route('companies.show', $company) }}">Ver detalle</a></td>
+                            <td><a class="button button-ghost button-sm" href="{{ route('companies.show', $company) }}">Ver detalle</a></td>
                         </tr>
                     @endforeach
                 </tbody>

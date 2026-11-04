@@ -20,7 +20,7 @@
                 </div>
                 <p class="muted">{{ $employee->category?->name ?? 'Sin categoría' }}</p>
                 <div class="actions">
-                    <a class="button button-ghost" href="{{ route('workforce.employees.edit', $employee) }}">Editar</a>
+                    <a class="button button-ghost button-sm" href="{{ route('workforce.employees.edit', $employee) }}">Editar</a>
                     @if($employee->approval_status === 'pending')
                         <details class="inline-disclosure">
                             <summary>Revisar solicitud</summary>
@@ -29,13 +29,13 @@
                                 <label>Categoría
                                     <select name="category_id"><option value="">Sin categoría</option>@foreach($categories->where('is_active', true) as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select>
                                 </label>
-                                <div class="actions"><button name="decision" value="approved">Aprobar</button><button name="decision" value="rejected" data-confirm="¿Rechazar esta solicitud?">Rechazar</button></div>
+                                <div class="actions"><button class="button button-primary button-sm" name="decision" value="approved">Aprobar</button><button class="button button-danger button-sm" name="decision" value="rejected" data-confirm="¿Rechazar esta solicitud?">Rechazar</button></div>
                             </form>
                         </details>
                     @endif
                     <form method="post" action="{{ route('workforce.employees.status', $employee) }}" class="inline-form" data-confirm="{{ $employee->is_active ? '¿Suspender el acceso de este empleado?' : '¿Reactivar el acceso de este empleado?' }}">
                         @csrf @method('PATCH')
-                        <button name="is_active" value="{{ $employee->is_active ? 0 : 1 }}" class="text-button">{{ $employee->is_active ? 'Suspender' : 'Reactivar' }}</button>
+                        <button name="is_active" value="{{ $employee->is_active ? 0 : 1 }}" class="button button-ghost button-sm {{ $employee->is_active ? 'button-danger' : '' }}">{{ $employee->is_active ? 'Suspender' : 'Reactivar' }}</button>
                     </form>
                 </div>
             </article>
@@ -78,7 +78,7 @@
                             <button type="submit">Guardar cambios</button>
                         </form>
                         <form method="post" action="{{ route('workforce.categories.delete', $category) }}" class="inline-form" data-confirm="¿Eliminar esta categoría? Solo se puede eliminar si no tiene empleados asignados.">
-                            @csrf @method('DELETE')<button type="submit" class="text-button">Eliminar categoría</button>
+                            @csrf @method('DELETE')<button type="submit" class="button button-danger button-sm">Eliminar categoría</button>
                         </form>
                     </details>
                 @endforeach
@@ -104,8 +104,8 @@
             @forelse($devices as $device)
                 <div class="workforce-item"><strong>{{ $device->name }}</strong><p class="muted">Usuario #{{ $device->user_id }} · {{ ['pending' => 'Pendiente', 'approved' => 'Autorizado', 'revoked' => 'Revocado'][$device->status] ?? $device->status }}</p>
                     @if($device->status !== 'revoked')<form method="post" action="{{ route('workforce.device', $device) }}" class="actions">@csrf @method('PATCH')
-                        @if($device->status === 'pending')<button name="status" value="approved">Autorizar</button>@endif
-                        <button name="status" value="revoked" data-confirm="¿Revocar este dispositivo y sus sesiones activas?">Revocar</button>
+                        @if($device->status === 'pending')<button class="button button-primary button-sm" name="status" value="approved">Autorizar</button>@endif
+                        <button class="button button-danger button-sm" name="status" value="revoked" data-confirm="¿Revocar este dispositivo y sus sesiones activas?">Revocar</button>
                     </form>@endif
                 </div>
             @empty<p class="empty-state">Aún no hay dispositivos registrados.</p>@endforelse
@@ -117,7 +117,7 @@
             @forelse($sessions as $accessSession)
                 <div class="workforce-item"><strong>{{ $accessSession->user?->name ?? 'Usuario eliminado' }}</strong><p class="muted">{{ $accessSession->channel === 'web' ? 'Navegador web' : ($accessSession->device?->name ?? 'Móvil') }} · {{ $accessSession->status === 'active' ? 'Activa' : 'Finalizada' }}</p>
                     <p class="muted">Inicio: {{ $accessSession->started_at }} · Último acceso: {{ $accessSession->last_seen_at ?? '—' }} @if($accessSession->ended_at)· Cierre: {{ $accessSession->ended_at }}@endif @if($accessSession->end_reason)· Motivo: {{ $accessSession->end_reason }}@endif</p>
-                    @if($accessSession->status === 'active')<form method="post" action="{{ route('workforce.sessions.end', $accessSession) }}" data-confirm="¿Finalizar esta sesión?">@csrf @method('PATCH')<button type="submit">Finalizar sesión</button></form>@endif
+                    @if($accessSession->status === 'active')<form method="post" action="{{ route('workforce.sessions.end', $accessSession) }}" data-confirm="¿Finalizar esta sesión?">@csrf @method('PATCH')<button class="button button-danger button-sm" type="submit">Finalizar sesión</button></form>@endif
                 </div>
             @empty<p class="empty-state">Aún no hay sesiones.</p>@endforelse
         </div>

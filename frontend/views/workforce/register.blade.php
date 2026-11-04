@@ -10,5 +10,5 @@
 <label for="branch_id">Sucursal</label><select id="branch_id" name="branch_id">@foreach($branches as $branch)<option value="{{ $branch->id }}">{{ $branch->name }}</option>@endforeach</select>
 <label for="password">Contraseña temporal</label><input id="password" type="password" name="password" minlength="12" required>
 <label for="password_confirmation">Confirmar contraseña</label><input id="password_confirmation" type="password" name="password_confirmation" minlength="12" required>
-<button class="button button-primary">Registrar</button></form><p><a href="{{ route('workforce.index') }}">Volver</a></p></section>
+<button class="button button-primary">Registrar</button></form><p><a class="back-link" href="{{ route('workforce.index') }}">← Volver</a></p></section>
 @endsection

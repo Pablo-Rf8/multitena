@@ -34,18 +34,18 @@
                             <td><span @class(['tag', 'tag-muted' => ! $item->is_active])>{{ $item->is_active ? 'Activa' : 'Suspendida' }}</span></td>
                             <td>
                                 @forelse ($company->users->where('branch_id', $item->id) as $assigned)
-                                    <div>{{ $assigned->name }} · {{ $assigned->email }} @if(! $assigned->is_active)<span class="tag tag-muted">Suspendido</span>@endif @if($assigned->role === 'branch_admin')<a href="{{ route('branch-users.edit', $assigned) }}">Editar</a>@endif</div>
+                                    <div>{{ $assigned->name }} · {{ $assigned->email }} @if(! $assigned->is_active)<span class="tag tag-muted">Suspendido</span>@endif @if($assigned->role === 'branch_admin')<a class="button button-ghost button-sm" href="{{ route('branch-users.edit', $assigned) }}">Editar</a>@endif</div>
                                 @empty
                                     <span class="hint">Sin administrador asignado</span>
                                 @endforelse
                             </td>
                             <td>
-                                <a href="{{ route('branches.edit', $item) }}">Editar</a>
+                                <a class="button button-ghost button-sm" href="{{ route('branches.edit', $item) }}">Editar</a>
                                 @unless ($item->is_central)
                                     <form method="post" action="{{ route('branches.status', $item) }}" class="inline-form" data-confirm="{{ $item->is_active ? '¿Suspender esta sucursal y bloquear el acceso de sus usuarios?' : '¿Activar esta sucursal?' }}">
                                         @csrf @method('PATCH')
                                         <input type="hidden" name="is_active" value="{{ $item->is_active ? '0' : '1' }}">
-                                        <button type="submit" class="text-button">{{ $item->is_active ? 'Suspender' : 'Activar' }}</button>
+                                        <button type="submit" class="button button-ghost button-sm {{ $item->is_active ? 'button-danger' : '' }}">{{ $item->is_active ? 'Suspender' : 'Activar' }}</button>
                                     </form>
                                 @endunless
                             </td>
@@ -69,11 +69,11 @@
                             <td>{{ $member->is_active ? 'Activo' : 'Suspendido' }}</td>
                             <td>
                                 @if ($member->role === 'branch_admin')
-                                    <a href="{{ route('branch-users.edit', $member) }}">Editar</a>
+                                    <a class="button button-ghost button-sm" href="{{ route('branch-users.edit', $member) }}">Editar</a>
                                     <form method="post" action="{{ route('branch-users.status', $member) }}" class="inline-form" data-confirm="{{ $member->is_active ? '¿Suspender este usuario?' : '¿Activar este usuario?' }}">
                                         @csrf @method('PATCH')
                                         <input type="hidden" name="is_active" value="{{ $member->is_active ? '0' : '1' }}">
-                                        <button class="text-button" type="submit">{{ $member->is_active ? 'Suspender' : 'Activar' }}</button>
+                                        <button class="button button-ghost button-sm {{ $member->is_active ? 'button-danger' : '' }}" type="submit">{{ $member->is_active ? 'Suspender' : 'Activar' }}</button>
                                     </form>
                                 @else
                                     <span class="muted">{{ $member->role === 'employee' ? 'Ver en Personal y acceso' : 'Gestiona el superadministrador' }}</span>

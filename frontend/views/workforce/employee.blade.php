@@ -10,5 +10,5 @@
 <label for="branch_id">Sucursal</label><select id="branch_id" name="branch_id">@foreach($branches as $branch)<option value="{{ $branch->id }}" @selected(old('branch_id', $employee->branch_id) == $branch->id)>{{ $branch->name }}</option>@endforeach</select>
 <label for="category_id">Categoría</label><select id="category_id" name="category_id"><option value="">Sin categoría</option>@foreach($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $employee->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select>
 <label for="is_active">Acceso</label><select id="is_active" name="is_active"><option value="1" @selected(old('is_active', $employee->is_active) == 1)>Activo</option><option value="0" @selected(old('is_active', $employee->is_active) == 0)>Suspendido</option></select>
-<button class="button button-primary">Guardar empleado</button></form><p><a href="{{ route('workforce.index') }}">Volver a personal</a></p></section>
+<button class="button button-primary">Guardar empleado</button></form><p><a class="back-link" href="{{ route('workforce.index') }}">← Volver a personal</a></p></section>
 @endsection

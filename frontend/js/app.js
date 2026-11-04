@@ -14,14 +14,66 @@ document.addEventListener('DOMContentLoaded', () => {
         email.value = slug ? `admin@${slug}.com` : '';
     });
 });
-document.addEventListener('submit', event => {
-    const message = event.submitter?.dataset.confirm || event.target.dataset.confirm;
-    if (message && !window.confirm(message)) event.preventDefault();
-    if (!event.defaultPrevented && event.target.method.toLowerCase() !== 'get') {
-        document.body.classList.add('is-loading');
-        const button = event.submitter;
-        if (button) button.setAttribute('aria-disabled', 'true');
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.querySelector('#confirm-dialog');
+    const cancel = dialog?.querySelector('[data-confirm-cancel]');
+    const accept = dialog?.querySelector('[data-confirm-accept]');
+    let pendingSubmission = null;
+    let approvedForm = null;
+
+    document.addEventListener('submit', event => {
+        const form = event.target;
+        const submitter = event.submitter;
+        const message = submitter?.dataset.confirm || form.dataset.confirm;
+
+        if (message && form !== approvedForm) {
+            event.preventDefault();
+            if (!dialog || typeof dialog.showModal !== 'function') {
+                if (window.confirm(message)) {
+                    approvedForm = form;
+                    try { form.requestSubmit(submitter || undefined); }
+                    finally { approvedForm = null; }
+                }
+                return;
+            }
+
+            const action = submitter?.textContent?.trim() || submitter?.value || 'Confirmar';
+            const isDanger = submitter?.classList.contains('button-danger')
+                || /suspender|rechazar|revocar|eliminar|finalizar/i.test(action);
+            dialog.querySelector('[data-confirm-title]').textContent = action;
+            dialog.querySelector('[data-confirm-message]').textContent = message;
+            accept.textContent = action;
+            accept.classList.toggle('button-danger', isDanger);
+            accept.classList.toggle('button-primary', !isDanger);
+            pendingSubmission = { form, submitter };
+            dialog.showModal();
+            cancel.focus();
+            return;
+        }
+
+        if (form.method.toLowerCase() !== 'get') {
+            document.body.classList.add('is-loading');
+            submitter?.setAttribute('aria-disabled', 'true');
+        }
+    });
+
+    cancel?.addEventListener('click', () => dialog.close());
+    dialog?.addEventListener('click', event => {
+        if (event.target === dialog) dialog.close();
+    });
+    dialog?.addEventListener('close', () => {
+        pendingSubmission?.submitter?.focus();
+        pendingSubmission = null;
+    });
+    accept?.addEventListener('click', () => {
+        const submission = pendingSubmission;
+        if (!submission) return;
+        pendingSubmission = null;
+        dialog.close();
+        approvedForm = submission.form;
+        try { submission.form.requestSubmit(submission.submitter || undefined); }
+        finally { approvedForm = null; }
+    });
 });
 
 document.addEventListener('DOMContentLoaded', () => {

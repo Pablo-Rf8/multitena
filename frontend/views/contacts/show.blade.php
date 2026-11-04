@@ -37,7 +37,7 @@
                             <td>{{ ['new'=>'Nueva','qualified'=>'Calificada','proposal'=>'Propuesta','won'=>'Ganada','lost'=>'Perdida'][$item->stage] ?? $item->stage }}</td>
                             <td>{{ number_format($item->amount_cents / 100, 2) }} {{ auth()->user()->company->currency }}</td>
                             <td>{{ $item->expected_close_on?->format('d/m/Y') ?? '—' }}</td>
-            <td>@if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a href="{{ route('opportunities.edit', $item) }}">Editar</a>@else<span class="muted">Solo lectura</span>@endif</td>
+            <td>@if(auth()->user()->role !== 'employee' || in_array('opportunities.write', auth()->user()->category?->permissions ?? [], true))<a class="button button-ghost button-sm" href="{{ route('opportunities.edit', $item) }}">Editar</a>@else<span class="muted">Solo lectura</span>@endif</td>
                         </tr>
                     @endforeach
                 </tbody>

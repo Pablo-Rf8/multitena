@@ -32,7 +32,7 @@
             </select>
         @endif
         <button class="button button-ghost" type="submit">Filtrar</button>
-        <a href="{{ route('contacts.export', request()->only(['q','status','branch_id'])) }}">Exportar CSV</a>
+        <a class="button button-ghost" href="{{ route('contacts.export', request()->only(['q','status','branch_id'])) }}">Exportar CSV</a>
     </form>
     @if($contacts->isEmpty())
         <p class="empty-state">No hay contactos con estos filtros.</p>
@@ -48,7 +48,7 @@
                             <td>{{ ['prospect'=>'Prospecto','qualified'=>'Calificado','customer'=>'Cliente','inactive'=>'Inactivo'][$contact->status] ?? $contact->status }}</td>
                             <td>{{ $contact->branch->name }}</td>
                             <td>{{ $contact->email ?: '—' }}</td>
-                            <td><a href="{{ route('contacts.show', $contact) }}">Ver ficha</a></td>
+                            <td><a class="button button-ghost button-sm" href="{{ route('contacts.show', $contact) }}">Ver ficha</a></td>
                         </tr>
                     @endforeach
                 </tbody>

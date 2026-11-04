@@ -62,11 +62,11 @@
                         <td>{{ $member->is_active ? 'Activo' : 'Suspendido' }}</td>
                         <td>{{ $member->last_login_at?->format('d/m/Y H:i') ?? 'Nunca' }}</td>
                         <td>
-                            <a href="{{ route('company-admins.edit', [$company, $member]) }}">Editar</a>
+                            <a class="button button-ghost button-sm" href="{{ route('company-admins.edit', [$company, $member]) }}">Editar</a>
                             <form method="post" action="{{ route('company-admins.status', [$company, $member]) }}" class="inline-form" data-confirm="{{ $member->is_active ? '¿Suspender este administrador?' : '¿Activar este administrador?' }}">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="is_active" value="{{ $member->is_active ? '0' : '1' }}">
-                                <button type="submit" class="text-button">{{ $member->is_active ? 'Suspender' : 'Activar' }}</button>
+                                <button type="submit" class="button button-ghost button-sm {{ $member->is_active ? 'button-danger' : '' }}">{{ $member->is_active ? 'Suspender' : 'Activar' }}</button>
                             </form>
                         </td>
                     </tr>

@@ -118,6 +118,16 @@
         </div>
     </div>
 </dialog>
+<dialog class="confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message">
+    <div class="confirm-dialog-inner">
+        <h2 id="confirm-dialog-title" data-confirm-title>Confirmar acción</h2>
+        <p id="confirm-dialog-message" data-confirm-message></p>
+        <div class="confirm-dialog-actions">
+            <button class="button button-ghost" type="button" data-confirm-cancel>Cancelar</button>
+            <button class="button button-primary" type="button" data-confirm-accept>Confirmar</button>
+        </div>
+    </div>
+</dialog>
 @endif
 </body>
 </html>
