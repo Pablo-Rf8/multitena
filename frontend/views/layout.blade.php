@@ -96,7 +96,7 @@
             @endif
             <button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>Cambiar contraseña</button>
             <div class="account-dialog-footer">
-                <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
+                <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit" data-confirm="¿Seguro que quieres cerrar sesión?"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>Cerrar sesión</button></form>
             </div>
         </div>
         <div class="account-password-panel" data-account-password-panel hidden>
