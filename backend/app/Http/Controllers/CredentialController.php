@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Credential;
 use App\Models\CredentialField;
+use App\Models\CredentialFavorite;
+use App\Models\CredentialShare;
 use App\Models\CredentialTemplate;
 use App\Models\User;
 use App\Services\Audit;
+use App\Services\OpenCredential;
+use App\Services\ShareLimits;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -24,9 +29,22 @@ class CredentialController extends Controller
     {
         Gate::authorize('viewAny', Credential::class);
         $user = $request->user();
-        $query = Credential::where('company_id', $user->company_id)->where(function ($q) use ($user) {
-            $q->where('owner_id', $user->id)->orWhereHas('grants', fn ($g) => $g->where('user_id', $user->id));
-        });
+        $section = in_array($request->query('section'), ['mine', 'shared', 'favorites'], true)
+            ? $request->query('section') : ($user->role === 'employee' ? 'shared' : 'mine');
+        $accessible = fn ($q) => $q->where('owner_id', $user->id)
+            ->orWhereHas('grants', fn ($g) => $g->where('user_id', $user->id))
+            ->orWhereHas('shares', fn ($s) => $s->where('user_id', $user->id)->available());
+        $query = Credential::where('company_id', $user->company_id);
+        if ($section === 'mine') {
+            $query->where('owner_id', $user->id);
+        } elseif ($section === 'shared') {
+            $query->where('owner_id', '!=', $user->id)->where(fn ($q) => $q
+                ->whereHas('grants', fn ($g) => $g->where('user_id', $user->id))
+                ->orWhereHas('shares', fn ($s) => $s->where('user_id', $user->id)->available()));
+        } else {
+            $query->whereHas('favorites', fn ($f) => $f->where('user_id', $user->id))
+                ->where(fn ($q) => $accessible($q));
+        }
         if ($user->role === 'employee') {
             $query->where('visibility', 'shared');
         }
@@ -41,12 +59,16 @@ class CredentialController extends Controller
         }
         $templateQuery = CredentialTemplate::where('company_id', $user->company_id);
         if ($user->role === 'employee') {
-            $templateQuery->whereHas('credentials', fn ($q) => $q->where('visibility', 'shared')->whereHas('grants', fn ($g) => $g->where('user_id', $user->id)));
+            $templateQuery->whereHas('credentials', fn ($q) => $q->where('visibility', 'shared')
+                ->where(fn ($c) => $c->whereHas('grants', fn ($g) => $g->where('user_id', $user->id))
+                    ->orWhereHas('shares', fn ($s) => $s->where('user_id', $user->id)->available())));
         }
 
         return view('credentials.index', [
-            'credentials' => $query->with(['template', 'owner'])->latest()->paginate(15)->withQueryString(),
+            'credentials' => $query->with(['template', 'owner'])->withExists(['favorites as is_favorite' => fn ($f) => $f->where('user_id', $user->id)])
+                ->latest()->paginate(15)->withQueryString(),
             'templates' => $templateQuery->orderBy('name')->get(),
+            'section' => $section,
         ]);
     }
 
@@ -76,24 +98,27 @@ class CredentialController extends Controller
         return redirect()->route('credentials.show', $credential)->with('status', 'Credencial creada.');
     }
 
-    public function show(Request $request, Credential $credential, Audit $audit): View
+    public function show(Request $request, Credential $credential, Audit $audit, OpenCredential $opener): Response
     {
         Gate::authorize('view', $credential);
-        $audit->record('credential.viewed', $credential, $credential->company_id);
-        $credential->load(['template.fields', 'values', 'owner', 'grants.user']);
+        $opener->handle($credential, $request->user(), $audit);
+        $credential->load(['template.fields', 'values', 'owner', 'grants.user', 'shares.user']);
 
-        return view('credentials.show', [
+        return response()->view('credentials.show', [
             'credential' => $credential,
             'values' => $credential->values->keyBy('field_id'),
             'canEdit' => Gate::allows('update', $credential),
             'canShare' => Gate::allows('share', $credential),
             'canReveal' => Gate::allows('reveal', $credential),
+            'isFavorite' => $credential->favorites()->where('user_id', $request->user()->id)->exists(),
+            'accesses' => Gate::allows('share', $credential)
+                ? $credential->accesses()->with('user')->latest('opened_at')->simplePaginate(20, ['*'], 'access_page') : collect(),
             'users' => Gate::allows('share', $credential)
                 ? User::where('company_id', $credential->company_id)->where('is_active', true)->where('id', '!=', $credential->owner_id)
                     ->where(fn ($q) => $q->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))
                     ->when($credential->visibility === 'private', fn ($q) => $q->whereIn('role', ['company_admin', 'branch_admin']))->orderBy('name')->get()
                 : collect(),
-        ]);
+        ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
     }
 
     public function edit(Request $request, Credential $credential): View
@@ -112,7 +137,10 @@ class CredentialController extends Controller
         if ($credential->owner_id !== $request->user()->id && $data['visibility'] !== $credential->visibility) {
             abort(403);
         }
-        if ($data['visibility'] === 'private' && $credential->visibility !== 'private' && $credential->grants()->whereHas('user', fn ($q) => $q->where('role', 'employee'))->exists()) {
+        if ($data['visibility'] === 'private' && $credential->visibility !== 'private' && (
+            $credential->grants()->whereHas('user', fn ($q) => $q->where('role', 'employee'))->exists()
+            || $credential->shares()->whereNull('revoked_at')->whereHas('user', fn ($q) => $q->where('role', 'employee'))->exists()
+        )) {
             throw ValidationException::withMessages(['visibility' => 'Revocá primero los accesos de empleados antes de hacerla privada.']);
         }
         $template = $credential->template()->with('fields')->firstOrFail();
@@ -143,6 +171,9 @@ class CredentialController extends Controller
             ->where(fn ($q) => $q->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))->findOrFail($data['user_id']);
         abort_if($user->id === $credential->owner_id, 422);
         abort_if($credential->visibility === 'private' && ! in_array($user->role, ['company_admin', 'branch_admin'], true), 403);
+        if ($credential->shares()->where('user_id', $user->id)->available()->exists()) {
+            throw ValidationException::withMessages(['user_id' => 'Revocá primero el acceso limitado de este usuario.']);
+        }
         $credential->grants()->updateOrCreate(['user_id' => $user->id], ['level' => $data['level'], 'can_reveal' => (bool) ($data['can_reveal'] ?? false)]);
         $audit->record('credential.grant_updated', $credential, $credential->company_id, ['user_id' => $user->id]);
 
@@ -168,6 +199,67 @@ class CredentialController extends Controller
         $audit->record('credential.secret_revealed', $credential, $credential->company_id, ['field_id' => $field->id]);
 
         return response()->json(['value' => Crypt::decryptString($value->secret_ciphertext)])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
+    }
+
+    public function share(Request $request, Credential $credential, Audit $audit, ShareLimits $limits): RedirectResponse
+    {
+        Gate::authorize('share', $credential);
+        $data = $limits->validated($request, [
+            'can_reveal' => ['nullable', 'boolean'],
+        ]);
+        $user = User::where('company_id', $credential->company_id)->where('is_active', true)
+            ->where(fn ($q) => $q->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))
+            ->findOrFail($data['user_id']);
+        abort_if($user->id === $credential->owner_id, 422);
+        abort_if($credential->visibility === 'private' && ! in_array($user->role, ['company_admin', 'branch_admin'], true), 403);
+        $share = DB::transaction(function () use ($credential, $user, $request, $data, $limits) {
+            if ($credential->grants()->where('user_id', $user->id)->exists()) {
+                throw ValidationException::withMessages(['user_id' => 'Este usuario ya tiene un permiso anterior. Revocalo antes de compartir con límites.']);
+            }
+            if ($credential->shares()->where('user_id', $user->id)->available()->exists()) {
+                throw ValidationException::withMessages(['user_id' => 'Este usuario ya tiene un acceso activo. Revocalo antes de crear otro.']);
+            }
+
+            return $credential->shares()->create([
+                'company_id' => $credential->company_id,
+                'user_id' => $user->id,
+                'shared_by_id' => $request->user()->id,
+                'can_reveal' => (bool) ($data['can_reveal'] ?? false),
+                'max_accesses' => $data['max_accesses'] ?? null,
+                'expires_at' => $limits->expiresAt($data),
+            ]);
+        }, 3);
+        $audit->record('credential.shared', $credential, $credential->company_id, ['share_id' => $share->id, 'user_id' => $user->id]);
+
+        return back()->with('status', 'Credencial compartida en solo lectura.');
+    }
+
+    public function revokeShare(Credential $credential, CredentialShare $share, Audit $audit): RedirectResponse
+    {
+        Gate::authorize('share', $credential);
+        abort_unless($share->credential_id === $credential->id && $share->company_id === $credential->company_id, 404);
+        if ($share->revoked_at === null) {
+            $share->update(['revoked_at' => now()]);
+            $audit->record('credential.share_revoked', $credential, $credential->company_id, ['share_id' => $share->id]);
+        }
+
+        return back()->with('status', 'Acceso revocado.');
+    }
+
+    public function favorite(Request $request, Credential $credential): RedirectResponse
+    {
+        Gate::authorize('view', $credential);
+        CredentialFavorite::firstOrCreate(['credential_id' => $credential->id, 'user_id' => $request->user()->id]);
+
+        return back()->with('status', 'Agregada a favoritas.');
+    }
+
+    public function unfavorite(Request $request, Credential $credential): RedirectResponse
+    {
+        abort_unless($credential->company_id === $request->user()->company_id, 404);
+        $credential->favorites()->where('user_id', $request->user()->id)->delete();
+
+        return back()->with('status', 'Quitada de favoritas.');
     }
 
     private function validatedValues(Request $request, CredentialTemplate $template, ?Credential $credential): array

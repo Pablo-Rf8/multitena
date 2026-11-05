@@ -24,4 +24,9 @@ class CredentialTemplate extends Model
     {
         return $this->hasMany(Credential::class, 'template_id');
     }
+
+    public function shares(): HasMany
+    {
+        return $this->hasMany(CredentialTemplateShare::class, 'template_id');
+    }
 }

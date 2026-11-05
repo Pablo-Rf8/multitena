@@ -23,7 +23,15 @@ Desde el menú lateral, abrí **Gestión de Credenciales**. El administrador de 
 
 Por decisión de seguridad, las credenciales **privadas** solo se pueden asignar a administradores de la misma empresa; las **compartidas** también se pueden asignar a empleados aprobados. El acceso nunca se concede a toda la empresa de forma automática. Una plantilla utilizada no se puede eliminar, y un campo con datos no se puede quitar ni cambiar de tipo. El superadministrador solo ve conteos globales, sin datos ni secretos.
 
+La lista tiene **Mis credenciales**, **Compartidas conmigo** y **Favoritas**. Cada sección permite buscar por nombre y filtrar por plantilla y modalidad. Las favoritas son individuales y desaparecen de la lista si el usuario pierde acceso a la credencial.
+
+En el detalle, **Compartir en solo lectura** permite elegir un destinatario de la misma empresa y establecer un máximo de aperturas, una duración en horas, días, semanas o meses, o ambas condiciones. Cada apertura exitosa del destinatario consume un uso mediante una actualización atómica. La búsqueda, el listado y una apertura denegada no consumen usos. El propietario ve el saldo, vencimiento, revocación e historial de aperturas. Revelar la contraseña sigue requiriendo una autorización independiente; una apertura autorizada permite revelarla en esa misma sesión durante cinco minutos, incluso si fue el último uso. El vencimiento y la revocación se comprueban también al revelarla.
+
+Los permisos anteriores **Ver/Modificable** se conservan bajo **Permisos anteriores** para no cambiar accesos ya otorgados; las comparticiones nuevas nunca conceden edición. No se puede crear simultáneamente un permiso anterior y una compartición limitada para el mismo destinatario. Una plantilla vacía puede compartirse con un empleado aprobado usando límite o duración. Su vista muestra únicamente nombres y tipos de campos, sin valores de credenciales.
+
 La migración `2026_11_04_000000_create_credential_management.php` agrega cinco tablas nuevas; no modifica ni borra tablas existentes. En una instalación existente, respaldá SQLite antes de ejecutar `php artisan migrate`. La clave `APP_KEY` debe conservarse para poder descifrar contraseñas ya guardadas.
+
+La migración `2026_11_05_000000_expand_credential_sharing.php` agrega cuatro tablas para comparticiones, favoritas y aperturas. No cambia ni elimina los registros anteriores. Probala primero sobre una copia de SQLite y conservá el respaldo antes de aplicarla en un servidor.
 
 ## Acceso por empresa
 

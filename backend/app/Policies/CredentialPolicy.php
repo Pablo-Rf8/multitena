@@ -29,7 +29,8 @@ class CredentialPolicy
             return false;
         }
 
-        return $credential->grants()->where('user_id', $user->id)->exists();
+        return $credential->grants()->where('user_id', $user->id)->exists()
+            || $credential->shares()->where('user_id', $user->id)->available()->exists();
     }
 
     public function update(User $user, Credential $credential): bool
@@ -50,8 +51,29 @@ class CredentialPolicy
 
     public function reveal(User $user, Credential $credential): bool
     {
-        return $this->view($user, $credential) && ($credential->owner_id === $user->id
-            || $credential->grants()->where('user_id', $user->id)->where('can_reveal', true)->exists());
+        if (! $this->sameCompany($user, $credential)) {
+            return false;
+        }
+        if ($credential->owner_id === $user->id) {
+            return true;
+        }
+        if ($credential->visibility === 'private' && ! in_array($user->role, ['company_admin', 'branch_admin'], true)) {
+            return false;
+        }
+        if ($credential->grants()->where('user_id', $user->id)->where('can_reveal', true)->exists()) {
+            return true;
+        }
+
+        $ticket = session('credential_share_open.'.$credential->id);
+        if (! is_array($ticket) || ($ticket['user_id'] ?? null) !== $user->id
+            || ($ticket['opened_at'] ?? 0) < now()->subMinutes(5)->timestamp) {
+            return false;
+        }
+
+        return $credential->shares()->whereKey($ticket['share_id'] ?? 0)
+            ->where('user_id', $user->id)->where('can_reveal', true)
+            ->whereNull('revoked_at')
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
     }
 
     private function tenant(User $user): bool

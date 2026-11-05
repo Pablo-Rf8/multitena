@@ -34,4 +34,19 @@ class Credential extends Model
     {
         return $this->hasMany(CredentialGrant::class);
     }
+
+    public function shares(): HasMany
+    {
+        return $this->hasMany(CredentialShare::class);
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(CredentialFavorite::class);
+    }
+
+    public function accesses(): HasMany
+    {
+        return $this->hasMany(CredentialAccess::class);
+    }
 }

@@ -9,12 +9,17 @@ class CredentialTemplatePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->company_id !== null && in_array($user->role, ['company_admin', 'branch_admin'], true);
+        return $user->company_id !== null && in_array($user->role, ['company_admin', 'branch_admin', 'employee'], true);
     }
 
     public function view(User $user, CredentialTemplate $template): bool
     {
-        return $this->viewAny($user) && $user->company_id === $template->company_id;
+        if (! $this->viewAny($user) || $user->company_id !== $template->company_id) {
+            return false;
+        }
+
+        return in_array($user->role, ['company_admin', 'branch_admin'], true)
+            || $template->shares()->where('user_id', $user->id)->available()->exists();
     }
 
     public function create(User $user): bool
@@ -28,6 +33,11 @@ class CredentialTemplatePolicy
     }
 
     public function delete(User $user, CredentialTemplate $template): bool
+    {
+        return $this->update($user, $template);
+    }
+
+    public function share(User $user, CredentialTemplate $template): bool
     {
         return $this->update($user, $template);
     }
