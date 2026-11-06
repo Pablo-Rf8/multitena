@@ -141,4 +141,29 @@ class SuperAdminCredentialSharingTest extends TestCase
         $this->get(route('credentials.index'))->assertOk()->assertDontSee('Portal Restricted');
         $this->get(route('credentials.show', $shared))->assertForbidden();
     }
+
+    public function test_only_an_administrator_owner_can_share_with_a_super_admin(): void
+    {
+        [$company, $admin, $credential] = $this->companyCredential('Pepsi');
+        $superAdmin = $this->superAdmin();
+        $employee = $company->users()->create([
+            'name' => 'Empleado', 'email' => 'employee@pepsi.test',
+            'password' => 'correct-horse-battery', 'role' => 'employee',
+            'branch_id' => $admin->branch_id, 'approval_status' => 'approved',
+        ]);
+
+        $credential->update(['owner_id' => $employee->id]);
+        $this->actingAs($employee)->post(route('credentials.shares.store', $credential), [
+            'user_id' => $superAdmin->id, 'max_accesses' => 2,
+        ])->assertForbidden();
+        $this->assertDatabaseCount('credential_shares', 0);
+
+        $credential->update(['owner_id' => $admin->id]);
+        $this->actingAs($admin)->post(route('credentials.shares.store', $credential), [
+            'user_id' => $superAdmin->id, 'max_accesses' => 2,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('credential_shares', [
+            'credential_id' => $credential->id, 'user_id' => $superAdmin->id,
+        ]);
+    }
 }

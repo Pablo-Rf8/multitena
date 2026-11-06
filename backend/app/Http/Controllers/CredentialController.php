@@ -302,6 +302,7 @@ class CredentialController extends Controller
 
     public function unfavorite(Request $request, Credential $credential): RedirectResponse
     {
+        Gate::authorize('view', $credential);
         abort_unless($credential->company_id === $request->user()->company_id, 404);
         $credential->favorites()->where('user_id', $request->user()->id)->delete();
 

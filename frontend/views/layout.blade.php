@@ -54,12 +54,6 @@
             </div>
             @include('partials.navigation', ['viewer' => $viewer])
             <div class="sidebar-bottom">
-                @if(session('demo_preview'))
-                    <form method="post" action="{{ route('demo.exit') }}" class="demo-preview-sidebar-form">
-                        @csrf
-                        <button class="button button-ghost" type="submit">← {{ __('Volver a plataforma') }}</button>
-                    </form>
-                @endif
                 <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog">
                     <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> {{ __('Mi cuenta') }}
                     <span class="account-trigger-arrow" aria-hidden="true">⌃</span>

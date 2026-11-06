@@ -19,22 +19,6 @@
         <div class="stat"><strong>{{ $pendingCount }}</strong><span>{{ __('Solicitudes pendientes') }}</span></div>
     </div>
     <p class="muted">{{ __('Gestión de Credenciales') }}: {{ $credentialTemplateCount }} {{ __('plantillas') }} · {{ $credentialCount }} {{ __('registros') }}. {{ __('Solo estadísticas; los datos y secretos pertenecen a cada empresa.') }}</p>
-    <div id="demo-companies" class="demo-preview-section">
-        <h2>{{ __('Probar empresas DEMO') }}</h2>
-        <p class="muted">{{ __('Elegí una empresa de demostración para abrir Credenciales, Plantillas y sus permisos. Podés volver al panel global en cualquier momento.') }}</p>
-        @if($demoCompanies->isEmpty())
-            <p class="empty-state">{{ __('No hay empresas DEMO activas con administrador disponible.') }}</p>
-        @else
-            <div class="demo-preview-actions">
-                @foreach($demoCompanies as $demoCompany)
-                    <form method="post" action="{{ route('companies.preview', $demoCompany) }}">
-                        @csrf
-                        <button class="button button-ghost" type="submit">{{ __('Probar') }} {{ $demoCompany->name }}</button>
-                    </form>
-                @endforeach
-            </div>
-        @endif
-    </div>
     <form method="get" action="{{ route('dashboard') }}" class="filter-bar">
         <label class="sr-only" for="company-search">{{ __('Buscar empresa') }}</label>
         <input id="company-search" name="q" type="search" value="{{ request('q') }}" placeholder="{{ __('Buscar empresa') }}">

@@ -52,7 +52,8 @@ class CredentialPolicy
 
     public function share(User $user, Credential $credential): bool
     {
-        return $this->delete($user, $credential);
+        return in_array($user->role, ['company_admin', 'branch_admin'], true)
+            && $this->delete($user, $credential);
     }
 
     public function reveal(User $user, Credential $credential): bool

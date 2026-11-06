@@ -125,7 +125,6 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
     });
 
     Route::middleware('super_admin')->group(function () {
-        Route::post('/companies/{company}/preview', [DemoPreviewController::class, 'start'])->name('companies.preview');
         Route::get('/employees/create', [WorkforceController::class, 'create'])->name('employees.create');
         Route::post('/employees', [WorkforceController::class, 'store'])->name('employees.store');
         Route::post('/employees/import', [WorkforceController::class, 'import'])->name('employees.import');

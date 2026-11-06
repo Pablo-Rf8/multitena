@@ -39,10 +39,6 @@ class DashboardController extends Controller
                 'pendingCount' => User::where('role', 'employee')->where('approval_status', 'pending')->count(),
                 'credentialCount' => Credential::count(),
                 'credentialTemplateCount' => CredentialTemplate::count(),
-                'demoCompanies' => Company::where('is_demo', true)->where('is_active', true)
-                    ->whereHas('users', fn ($q) => $q->where('role', 'company_admin')->where('is_active', true)
-                        ->whereHas('branch', fn ($branch) => $branch->where('is_active', true)))
-                    ->orderBy('name')->get(),
             ]);
         }
 

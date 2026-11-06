@@ -13,30 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 class DemoPreviewController extends Controller
 {
-    public function start(Request $request, Company $company, Audit $audit, WebSessionStarter $sessions): RedirectResponse
-    {
-        abort_unless($company->is_demo && $company->is_active, 403);
-
-        $demoAdmin = $company->users()->where('role', 'company_admin')->where('is_active', true)
-            ->whereHas('branch', fn ($query) => $query->where('is_active', true))->orderBy('id')->first();
-        if (! $demoAdmin) {
-            return back()->withErrors(['demo_preview' => __('Esta empresa DEMO necesita un administrador activo para probarla.')]);
-        }
-
-        $superAdmin = $request->user();
-        $audit->record('demo_preview.started', $company, $company->id, ['demo_user_id' => $demoAdmin->id]);
-        $this->closeCurrentSession($request, 'demo_preview_started');
-        Auth::login($demoAdmin);
-        $sessions->start($request, $demoAdmin, 'demo_preview');
-        $request->session()->put('demo_preview', [
-            'super_admin_id' => $superAdmin->id,
-            'company_id' => $company->id,
-            'demo_user_id' => $demoAdmin->id,
-        ]);
-
-        return redirect()->route('credentials.index')->with('status', __('Estás probando :company como administrador DEMO.', ['company' => $company->name]));
-    }
-
     public function stop(Request $request, Audit $audit, WebSessionStarter $sessions): RedirectResponse
     {
         $preview = $request->session()->get('demo_preview');

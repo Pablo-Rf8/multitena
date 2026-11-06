@@ -5,7 +5,6 @@
     <div class="section-head"><div><p class="eyebrow">{{ $isPlatformInbox ? __('Plataforma') : __('Empresa') }}</p><h1>{{ $isPlatformInbox ? __('Compartidas conmigo') : __('Gestión de Credenciales') }}</h1><p class="intro">{{ $isPlatformInbox ? __('Credenciales compartidas por empresas contigo. Solo podés abrir las que sigan autorizadas.') : __('Accesos de tu empresa compartidos con permisos individuales.') }}</p></div>
         @can('create', \App\Models\Credential::class)<a class="button button-primary" href="{{ route('credentials.create') }}">{{ __('Nueva credencial') }}</a>@endcan
     </div>
-    @can('viewAny', \App\Models\CredentialTemplate::class)<p><a class="button button-ghost" href="{{ route('credential-templates.index') }}">{{ auth()->user()->role === 'employee' ? __('Plantillas compartidas') : __('Administrar plantillas') }}</a></p>@endcan
     @unless($isPlatformInbox)<nav class="credential-tabs" aria-label="{{ __('Secciones de credenciales') }}">
         @foreach(['mine' => 'Mis credenciales', 'shared' => 'Compartidas conmigo', 'favorites' => 'Favoritas'] as $key => $label)
             <a class="button button-ghost {{ $section === $key ? 'credential-tab-active' : '' }}" href="{{ route('credentials.index', ['section' => $key]) }}" @if($section === $key) aria-current="page" @endif>{{ __($label) }}</a>

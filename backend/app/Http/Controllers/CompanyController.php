@@ -50,9 +50,6 @@ class CompanyController extends Controller
             'opportunityCount' => $company->opportunities()->count(),
             'activity' => ActivityLog::with('actor')->where('company_id', $company->id)->latest()->limit(15)->get(),
             'domains' => CompanySetting::firstOrCreate(['company_id' => $company->id])->email_domains ?? [],
-            'canPreviewDemo' => $company->is_demo && $company->is_active
-                && $company->users()->where('role', 'company_admin')->where('is_active', true)
-                    ->whereHas('branch', fn ($query) => $query->where('is_active', true))->exists(),
         ]);
     }
 
