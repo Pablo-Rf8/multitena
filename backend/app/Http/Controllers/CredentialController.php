@@ -7,6 +7,7 @@ use App\Models\CredentialField;
 use App\Models\CredentialFavorite;
 use App\Models\CredentialShare;
 use App\Models\CredentialTemplate;
+use App\Models\Company;
 use App\Models\User;
 use App\Services\Audit;
 use App\Services\OpenCredential;
@@ -29,6 +30,9 @@ class CredentialController extends Controller
     {
         Gate::authorize('viewAny', Credential::class);
         $user = $request->user();
+        if ($user->role === 'super_admin') {
+            return $this->platformInbox($request);
+        }
         $section = in_array($request->query('section'), ['mine', 'shared', 'favorites'], true)
             ? $request->query('section') : ($user->role === 'employee' ? 'shared' : 'mine');
         $accessible = fn ($q) => $q->where('owner_id', $user->id)
@@ -69,6 +73,36 @@ class CredentialController extends Controller
                 ->latest()->paginate(15)->withQueryString(),
             'templates' => $templateQuery->orderBy('name')->get(),
             'section' => $section,
+            'isPlatformInbox' => false,
+            'companies' => collect(),
+        ]);
+    }
+
+    private function platformInbox(Request $request): View
+    {
+        $user = $request->user();
+        $shared = fn ($query) => $query->where('visibility', 'shared')
+            ->whereHas('company', fn ($company) => $company->where('is_active', true))
+            ->whereHas('shares', fn ($shares) => $shares->where('user_id', $user->id)->available());
+        $query = $shared(Credential::query());
+        if ($request->filled('q')) {
+            $query->where('title', 'like', '%'.trim((string) $request->query('q')).'%');
+        }
+        if ($request->filled('company') && ctype_digit((string) $request->query('company'))) {
+            $query->where('company_id', $request->query('company'));
+        }
+        if ($request->filled('template') && ctype_digit((string) $request->query('template'))) {
+            $query->where('template_id', $request->query('template'));
+        }
+
+        return view('credentials.index', [
+            'credentials' => $query->with(['company', 'template', 'owner'])->latest()->paginate(15)->withQueryString(),
+            'templates' => CredentialTemplate::whereHas('credentials', fn ($credentials) => $shared($credentials))
+                ->orderBy('name')->get(),
+            'companies' => Company::whereHas('credentials', fn ($credentials) => $shared($credentials))
+                ->orderBy('name')->get(),
+            'section' => 'shared',
+            'isPlatformInbox' => true,
         ]);
     }
 
@@ -102,21 +136,29 @@ class CredentialController extends Controller
     {
         Gate::authorize('view', $credential);
         $opener->handle($credential, $request->user(), $audit);
-        $credential->load(['template.fields', 'values', 'owner', 'grants.user', 'shares.user']);
+        $canShare = Gate::allows('share', $credential);
+        $credential->load(['company', 'template.fields', 'values', 'owner']);
+        if ($canShare) {
+            $credential->load(['grants.user', 'shares.user']);
+        }
 
         return response()->view('credentials.show', [
             'credential' => $credential,
             'values' => $credential->values->keyBy('field_id'),
             'canEdit' => Gate::allows('update', $credential),
-            'canShare' => Gate::allows('share', $credential),
+            'canShare' => $canShare,
             'canReveal' => Gate::allows('reveal', $credential),
-            'isFavorite' => $credential->favorites()->where('user_id', $request->user()->id)->exists(),
-            'accesses' => Gate::allows('share', $credential)
+            'isFavorite' => $request->user()->role !== 'super_admin'
+                && $credential->favorites()->where('user_id', $request->user()->id)->exists(),
+            'accesses' => $canShare
                 ? $credential->accesses()->with('user')->latest('opened_at')->simplePaginate(20, ['*'], 'access_page') : collect(),
-            'users' => Gate::allows('share', $credential)
+            'users' => $canShare
                 ? User::where('company_id', $credential->company_id)->where('is_active', true)->where('id', '!=', $credential->owner_id)
                     ->where(fn ($q) => $q->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))
                     ->when($credential->visibility === 'private', fn ($q) => $q->whereIn('role', ['company_admin', 'branch_admin']))->orderBy('name')->get()
+                : collect(),
+            'superAdmins' => $canShare && $credential->visibility === 'shared'
+                ? User::where('role', 'super_admin')->whereNull('company_id')->where('is_active', true)->orderBy('name')->get()
                 : collect(),
         ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
     }
@@ -139,9 +181,9 @@ class CredentialController extends Controller
         }
         if ($data['visibility'] === 'private' && $credential->visibility !== 'private' && (
             $credential->grants()->whereHas('user', fn ($q) => $q->where('role', 'employee'))->exists()
-            || $credential->shares()->whereNull('revoked_at')->whereHas('user', fn ($q) => $q->where('role', 'employee'))->exists()
+            || $credential->shares()->whereNull('revoked_at')->whereHas('user', fn ($q) => $q->whereIn('role', ['employee', 'super_admin']))->exists()
         )) {
-            throw ValidationException::withMessages(['visibility' => 'Revocá primero los accesos de empleados antes de hacerla privada.']);
+            throw ValidationException::withMessages(['visibility' => 'Revocá primero los accesos compartidos antes de hacerla privada.']);
         }
         $template = $credential->template()->with('fields')->firstOrFail();
         $values = $this->validatedValues($request, $template, $credential);
@@ -207,9 +249,13 @@ class CredentialController extends Controller
         $data = $limits->validated($request, [
             'can_reveal' => ['nullable', 'boolean'],
         ]);
-        $user = User::where('company_id', $credential->company_id)->where('is_active', true)
-            ->where(fn ($q) => $q->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))
-            ->findOrFail($data['user_id']);
+        $user = User::where('is_active', true)->findOrFail($data['user_id']);
+        if ($user->role === 'super_admin') {
+            abort_unless($credential->visibility === 'shared' && $user->company_id === null, 403);
+        } else {
+            abort_unless($user->company_id === $credential->company_id
+                && ($user->role !== 'employee' || $user->approval_status === 'approved'), 404);
+        }
         abort_if($user->id === $credential->owner_id, 422);
         abort_if($credential->visibility === 'private' && ! in_array($user->role, ['company_admin', 'branch_admin'], true), 403);
         $share = DB::transaction(function () use ($credential, $user, $request, $data, $limits) {

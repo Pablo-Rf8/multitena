@@ -1,10 +1,10 @@
 @extends('layout')
 @section('title', $credential->title.' · Multitena')
 @section('content')
-<section class="panel"><div class="section-head"><div><p class="eyebrow">{{ __('Gestión de Credenciales') }}</p><h1>{{ $credential->title }}</h1><p class="intro">{{ $credential->template->name }} · {{ $credential->visibility === 'private' ? __('Privada') : __('Compartida') }} · {{ __('Creada por') }} {{ $credential->owner->name }}</p></div>
+<section class="panel"><div class="section-head"><div><p class="eyebrow">{{ __('Gestión de Credenciales') }}</p><h1>{{ $credential->title }}</h1><p class="intro">@if(auth()->user()->role === 'super_admin'){{ $credential->company->name }} · @endif{{ $credential->template->name }} · {{ $credential->visibility === 'private' ? __('Privada') : __('Compartida') }} · {{ __('Creada por') }} {{ $credential->owner->name }}</p></div>
 @if($canEdit)<a class="button button-primary" href="{{ route('credentials.edit', $credential) }}">{{ __('Editar credencial') }}</a>@endif</div>
 <div class="credential-row-actions"><a class="button button-ghost" href="{{ route('credentials.index') }}">← {{ __('Volver a credenciales') }}</a>
-<form method="post" action="{{ $isFavorite ? route('credentials.favorite.destroy', $credential) : route('credentials.favorite.store', $credential) }}">@csrf @if($isFavorite) @method('DELETE') @endif<button class="button button-ghost" type="submit">{{ $isFavorite ? __('★ Quitar de favoritas') : __('☆ Agregar a favoritas') }}</button></form></div>
+@unless(auth()->user()->role === 'super_admin')<form method="post" action="{{ $isFavorite ? route('credentials.favorite.destroy', $credential) : route('credentials.favorite.store', $credential) }}">@csrf @if($isFavorite) @method('DELETE') @endif<button class="button button-ghost" type="submit">{{ $isFavorite ? __('★ Quitar de favoritas') : __('☆ Agregar a favoritas') }}</button></form>@endunless</div>
 <div class="credential-details">
 @foreach($credential->template->fields as $field)
 @php($stored = $values->get($field->id))
@@ -18,8 +18,11 @@
 @if($canShare)
 <div class="credential-sharing"><h2>{{ __('Compartir en solo lectura') }}</h2><p class="muted">{{ __('Definí un límite de aperturas, una duración o ambos. Mostrar contraseñas requiere autorización separada.') }}</p>
 @if($errors->any())<div class="notice notice-error" role="alert">{{ $errors->first() }}</div>@endif
-@if($users->isNotEmpty())<form method="post" action="{{ route('credentials.shares.store', $credential) }}" class="credential-share-form">@csrf
-<label>{{ __('Destinatario') }} <select name="user_id" required><option value="">{{ __('Elegir usuario') }}</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>{{ $user->name }} ({{ $user->email }})</option>@endforeach</select></label>
+@if($users->isNotEmpty() || $superAdmins->isNotEmpty())<form method="post" action="{{ route('credentials.shares.store', $credential) }}" class="credential-share-form">@csrf
+<label>{{ __('Destinatario') }} <select name="user_id" required><option value="">{{ __('Elegir usuario') }}</option>
+@if($users->isNotEmpty())<optgroup label="{{ __('Usuarios de la empresa') }}">@foreach($users as $user)<option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>{{ $user->name }} ({{ $user->email }})</option>@endforeach</optgroup>@endif
+@if($superAdmins->isNotEmpty())<optgroup label="{{ __('Superadministradores de plataforma') }}">@foreach($superAdmins as $superAdmin)<option value="{{ $superAdmin->id }}" @selected(old('user_id') == $superAdmin->id)>{{ $superAdmin->name }} ({{ $superAdmin->email }})</option>@endforeach</optgroup>@endif
+</select></label>
 <label>{{ __('Máximo de aperturas') }} <input type="number" name="max_accesses" min="1" max="100000" value="{{ old('max_accesses') }}" placeholder="{{ __('Sin límite') }}"></label>
 <label>{{ __('Duración') }} <input type="number" name="duration_value" min="1" max="365" value="{{ old('duration_value') }}" placeholder="{{ __('Opcional') }}"></label>
 <label>{{ __('Unidad') }} <select name="duration_unit"><option value="">{{ __('Sin vencimiento') }}</option><option value="hours" @selected(old('duration_unit') === 'hours')>{{ __('Horas') }}</option><option value="days" @selected(old('duration_unit') === 'days')>{{ __('Días') }}</option><option value="weeks" @selected(old('duration_unit') === 'weeks')>{{ __('Semanas') }}</option><option value="months" @selected(old('duration_unit') === 'months')>{{ __('Meses') }}</option></select></label>

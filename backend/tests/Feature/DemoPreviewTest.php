@@ -46,7 +46,7 @@ class DemoPreviewTest extends TestCase
         $this->actingAs($super)->get(route('dashboard'))->assertOk()
             ->assertSee('Probar empresas DEMO')->assertSee('Probar Pepsi Demo')
             ->assertDontSee('Probar Empresa Real');
-        $this->get(route('credentials.index'))->assertForbidden();
+        $this->get(route('credentials.index'))->assertOk()->assertDontSee('Secreto real');
         $this->get(route('credential-templates.index'))->assertForbidden();
         $this->post(route('companies.preview', $real))->assertForbidden();
 
@@ -119,7 +119,7 @@ class DemoPreviewTest extends TestCase
         $this->assertSame(1, MobileSession::where('user_id', $super->id)->where('status', 'active')->count());
         $this->get(route('companies.show', $demo))->assertOk()->assertSee('Probar Pepsi Demo');
         $this->get(route('dashboard'))->assertOk()->assertSee('Administración global');
-        $this->get(route('credentials.index'))->assertForbidden();
+        $this->get(route('credentials.index'))->assertOk()->assertDontSee('Portal DEMO');
         $this->get(route('credentials.show', $credential))->assertForbidden();
     }
 

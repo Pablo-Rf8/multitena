@@ -8,6 +8,7 @@
     <a href="{{ route('dashboard') }}" @class(['current' => request()->routeIs('dashboard')]) @if(request()->routeIs('dashboard')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg>{{ $viewer->role === 'super_admin' ? __('Empresas') : __('Inicio') }}</a>
     @if($viewer->role === 'super_admin')
         <span class="nav-group-label">{{ __('Gestión') }}</span>
+        <a href="{{ route('credentials.index') }}" @class(['current' => request()->routeIs('credentials.*')]) @if(request()->routeIs('credentials.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Compartidas conmigo') }}</a>
         <a href="{{ route('dashboard') }}#demo-companies"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Probar empresas DEMO') }}</a>
         <a href="{{ route('companies.create') }}" @class(['current' => request()->routeIs('companies.create')]) @if(request()->routeIs('companies.create')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>{{ __('Nueva empresa') }}</a>
         <a href="{{ route('employees.create') }}" @class(['current' => request()->routeIs('employees.create')]) @if(request()->routeIs('employees.create')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>{{ __('Registrar empleados') }}</a>

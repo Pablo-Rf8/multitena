@@ -52,6 +52,10 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('/account/password', [PasswordController::class, 'update'])->name('password.update');
     Route::get('/branding/logo', [BrandingController::class, 'logo'])->middleware('tenant_user')->name('branding.logo');
+    Route::get('/credentials', [CredentialController::class, 'index'])->name('credentials.index');
+    Route::get('/credentials/{credential}', [CredentialController::class, 'show'])->whereNumber('credential')->name('credentials.show');
+    Route::post('/credentials/{credential}/fields/{field}/reveal', [CredentialController::class, 'reveal'])
+        ->whereNumber('credential')->whereNumber('field')->middleware('throttle:20,1')->name('credentials.reveal');
 
     Route::middleware('tenant_user')->group(function () {
         Route::get('/credential-templates', [CredentialTemplateController::class, 'index'])->name('credential-templates.index');
@@ -63,10 +67,8 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::delete('/credential-templates/{template}', [CredentialTemplateController::class, 'destroy'])->name('credential-templates.destroy');
         Route::post('/credential-templates/{template}/shares', [CredentialTemplateController::class, 'share'])->name('credential-templates.shares.store');
         Route::delete('/credential-templates/{template}/shares/{share}', [CredentialTemplateController::class, 'revokeShare'])->name('credential-templates.shares.destroy');
-        Route::get('/credentials', [CredentialController::class, 'index'])->name('credentials.index');
         Route::get('/credentials/create', [CredentialController::class, 'create'])->name('credentials.create');
         Route::post('/credentials', [CredentialController::class, 'store'])->name('credentials.store');
-        Route::get('/credentials/{credential}', [CredentialController::class, 'show'])->name('credentials.show');
         Route::get('/credentials/{credential}/edit', [CredentialController::class, 'edit'])->name('credentials.edit');
         Route::put('/credentials/{credential}', [CredentialController::class, 'update'])->name('credentials.update');
         Route::delete('/credentials/{credential}', [CredentialController::class, 'destroy'])->name('credentials.destroy');
@@ -76,7 +78,6 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::delete('/credentials/{credential}/shares/{share}', [CredentialController::class, 'revokeShare'])->name('credentials.shares.destroy');
         Route::post('/credentials/{credential}/favorite', [CredentialController::class, 'favorite'])->name('credentials.favorite.store');
         Route::delete('/credentials/{credential}/favorite', [CredentialController::class, 'unfavorite'])->name('credentials.favorite.destroy');
-        Route::post('/credentials/{credential}/fields/{field}/reveal', [CredentialController::class, 'reveal'])->middleware('throttle:20,1')->name('credentials.reveal');
         Route::get('/contacts', [ContactController::class, 'index'])->middleware('crm_permission:contacts.read')->name('contacts.index');
         Route::get('/contacts/export', [ContactController::class, 'export'])->middleware('crm_permission:contacts.read')->name('contacts.export');
         Route::get('/contacts/create', [ContactController::class, 'create'])->middleware('crm_permission:contacts.write')->name('contacts.create');

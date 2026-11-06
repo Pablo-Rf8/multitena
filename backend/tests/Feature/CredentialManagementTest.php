@@ -143,7 +143,7 @@ class CredentialManagementTest extends TestCase
         $this->post(route('credentials.store'), ['title' => 'Intento', 'template_id' => $template->id, 'visibility' => 'shared'])->assertNotFound();
         $super = User::factory()->create(['role' => 'super_admin']);
         $this->actingAs($super)->get(route('dashboard'))->assertOk()->assertSee('Gestión de Credenciales')->assertDontSee('Portal secreto Pepsi');
-        $this->get(route('credentials.index'))->assertForbidden();
+        $this->get(route('credentials.index'))->assertOk()->assertDontSee('Portal secreto Pepsi');
         $this->get(route('credential-templates.index'))->assertForbidden();
         $this->get(route('credentials.show', $credential))->assertForbidden();
     }

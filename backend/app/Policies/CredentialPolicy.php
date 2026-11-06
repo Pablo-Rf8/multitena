@@ -9,7 +9,7 @@ class CredentialPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $this->tenant($user);
+        return $user->role === 'super_admin' || $this->tenant($user);
     }
 
     public function create(User $user): bool
@@ -19,6 +19,9 @@ class CredentialPolicy
 
     public function view(User $user, Credential $credential): bool
     {
+        if ($user->role === 'super_admin') {
+            return $this->platformShare($user, $credential);
+        }
         if (! $this->sameCompany($user, $credential)) {
             return false;
         }
@@ -35,6 +38,9 @@ class CredentialPolicy
 
     public function update(User $user, Credential $credential): bool
     {
+        if ($user->role === 'super_admin') {
+            return false;
+        }
         return $this->view($user, $credential) && ($credential->owner_id === $user->id
             || $credential->grants()->where('user_id', $user->id)->where('level', 'edit')->exists());
     }
@@ -51,6 +57,10 @@ class CredentialPolicy
 
     public function reveal(User $user, Credential $credential): bool
     {
+        if ($user->role === 'super_admin') {
+            return $user->is_active && $credential->visibility === 'shared'
+                && $credential->company?->is_active && $this->openedRevealShare($user, $credential);
+        }
         if (! $this->sameCompany($user, $credential)) {
             return false;
         }
@@ -64,6 +74,11 @@ class CredentialPolicy
             return true;
         }
 
+        return $this->openedRevealShare($user, $credential);
+    }
+
+    private function openedRevealShare(User $user, Credential $credential): bool
+    {
         $ticket = session('credential_share_open.'.$credential->id);
         if (! is_array($ticket) || ($ticket['user_id'] ?? null) !== $user->id
             || ($ticket['opened_at'] ?? 0) < now()->subMinutes(5)->timestamp) {
@@ -74,6 +89,13 @@ class CredentialPolicy
             ->where('user_id', $user->id)->where('can_reveal', true)
             ->whereNull('revoked_at')
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->exists();
+    }
+
+    private function platformShare(User $user, Credential $credential): bool
+    {
+        return $user->is_active && $credential->visibility === 'shared'
+            && $credential->company?->is_active
+            && $credential->shares()->where('user_id', $user->id)->available()->exists();
     }
 
     private function tenant(User $user): bool
