@@ -18,6 +18,7 @@ use App\Http\Controllers\AccessNotificationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\CredentialTemplateController;
+use App\Http\Controllers\DemoPreviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -42,8 +43,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1')->name('password.store');
 });
 
-Route::middleware(['auth', 'active_account'])->group(function () {
+Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/demo/exit', [DemoPreviewController::class, 'stop'])->name('demo.exit');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/notifications', [AccessNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}/read', [AccessNotificationController::class, 'read'])->name('notifications.read');
@@ -122,6 +124,7 @@ Route::middleware(['auth', 'active_account'])->group(function () {
     });
 
     Route::middleware('super_admin')->group(function () {
+        Route::post('/companies/{company}/preview', [DemoPreviewController::class, 'start'])->name('companies.preview');
         Route::get('/employees/create', [WorkforceController::class, 'create'])->name('employees.create');
         Route::post('/employees', [WorkforceController::class, 'store'])->name('employees.store');
         Route::post('/employees/import', [WorkforceController::class, 'import'])->name('employees.import');

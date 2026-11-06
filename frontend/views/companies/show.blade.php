@@ -13,6 +13,14 @@
         </div>
         <a class="button button-ghost" href="{{ route('companies.edit', $company) }}">{{ __('Editar empresa') }}</a>
     </div>
+    @if($canPreviewDemo)
+        <form method="post" action="{{ route('companies.preview', $company) }}" class="demo-preview-actions">
+            @csrf
+            <button class="button button-ghost" type="submit">{{ __('Probar') }} {{ $company->name }}</button>
+            <span class="muted">{{ __('Acceso de prueba a Credenciales y Plantillas de esta empresa DEMO.') }}</span>
+        </form>
+    @endif
+    @error('demo_preview')<div class="notice notice-error" role="alert">{{ $message }}</div>@enderror
     <div class="stats">
         <div class="stat"><strong>{{ $company->branches->count() }}</strong><span>{{ __('Sucursales') }}</span></div>
         <div class="stat"><strong>{{ $userCount }}</strong><span>{{ __('Usuarios') }}</span></div>

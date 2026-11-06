@@ -54,6 +54,12 @@
             </div>
             @include('partials.navigation', ['viewer' => $viewer])
             <div class="sidebar-bottom">
+                @if(session('demo_preview'))
+                    <form method="post" action="{{ route('demo.exit') }}" class="demo-preview-sidebar-form">
+                        @csrf
+                        <button class="button button-ghost" type="submit">← {{ __('Volver a plataforma') }}</button>
+                    </form>
+                @endif
                 <button class="account-trigger" type="button" data-account-open aria-haspopup="dialog" aria-controls="account-dialog">
                     <svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg> {{ __('Mi cuenta') }}
                     <span class="account-trigger-arrow" aria-hidden="true">⌃</span>
@@ -74,6 +80,12 @@
             </div>
         </header>
         <main class="page" id="main-content">
+            @if($viewer && session('demo_preview'))
+                <div class="notice demo-preview-bar" role="status">
+                    <span><strong>{{ __('Modo DEMO') }} · {{ $brandName }}</strong><br><small>{{ __('Estás probando la cuenta de administrador de esta empresa.') }}</small></span>
+                    <form method="post" action="{{ route('demo.exit') }}">@csrf<button class="button button-ghost button-sm" type="submit">{{ __('Volver a plataforma') }}</button></form>
+                </div>
+            @endif
             <div class="loading-indicator" role="status" aria-live="polite">{{ __('Guardando…') }}</div>
             @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
             @if($errors->has('administrator') || $errors->has('branch'))<div class="notice notice-error" role="alert">{{ $errors->first('administrator') ?: $errors->first('branch') }}</div>@endif
@@ -86,7 +98,7 @@
     <div class="account-dialog-inner">
         <div class="account-dialog-head">
             <span class="account-dialog-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</span>
-            <div class="account-dialog-person"><h2 id="account-dialog-title">{{ $viewer->name }}</h2><p class="muted">{{ $viewer->email }}</p></div>
+            <div class="account-dialog-person"><h2 id="account-dialog-title">{{ $viewer->name }}</h2><p class="muted">{{ $viewer->email }}</p>@if(session('demo_preview'))<p class="muted">{{ __('Cuenta de prueba DEMO') }}</p>@endif</div>
             <button type="button" class="dialog-close" data-account-close aria-label="{{ __('Cerrar ventana') }}"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
         <div data-account-menu>
@@ -98,7 +110,7 @@
                     <a href="{{ route('activity.index') }}"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg><span>{{ __('Actividad') }}</span></a>
                 </nav>
             @endif
-            <button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>{{ __('Cambiar contraseña') }}</button>
+            @unless(session('demo_preview'))<button class="account-menu-action" type="button" data-account-password-open><svg class="icon" aria-hidden="true"><use href="#icon-key"/></svg>{{ __('Cambiar contraseña') }}</button>@endunless
             <div class="account-dialog-footer">
                 <form method="post" action="{{ route('logout') }}">@csrf<button class="button button-ghost" type="submit" data-confirm="{{ __('¿Seguro que quieres cerrar sesión?') }}"><svg class="icon" aria-hidden="true"><use href="#icon-logout"/></svg>{{ __('Cerrar sesión') }}</button></form>
             </div>

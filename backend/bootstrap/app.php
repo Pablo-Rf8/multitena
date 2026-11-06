@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureCompanyAdmin;
 use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\EnsureTenantUser;
+use App\Http\Middleware\EnsureDemoPreview;
 use App\Http\Middleware\EnsureMobileSession;
 use App\Http\Middleware\EnsureCrmPermission;
 use App\Http\Middleware\CanonicalProductionUrl;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'company_admin' => EnsureCompanyAdmin::class,
             'active_account' => EnsureActiveAccount::class,
             'tenant_user' => EnsureTenantUser::class,
+            'demo_preview' => EnsureDemoPreview::class,
             'mobile_session' => EnsureMobileSession::class,
             'crm_permission' => EnsureCrmPermission::class,
         ]);

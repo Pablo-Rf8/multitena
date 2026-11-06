@@ -8,11 +8,13 @@
     <a href="{{ route('dashboard') }}" @class(['current' => request()->routeIs('dashboard')]) @if(request()->routeIs('dashboard')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-home"/></svg>{{ $viewer->role === 'super_admin' ? __('Empresas') : __('Inicio') }}</a>
     @if($viewer->role === 'super_admin')
         <span class="nav-group-label">{{ __('Gestión') }}</span>
+        <a href="{{ route('dashboard') }}#demo-companies"><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Probar empresas DEMO') }}</a>
         <a href="{{ route('companies.create') }}" @class(['current' => request()->routeIs('companies.create')]) @if(request()->routeIs('companies.create')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>{{ __('Nueva empresa') }}</a>
         <a href="{{ route('employees.create') }}" @class(['current' => request()->routeIs('employees.create')]) @if(request()->routeIs('employees.create')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>{{ __('Registrar empleados') }}</a>
     @else
         <a href="{{ route('notifications.index') }}" @class(['current' => request()->routeIs('notifications.*')]) @if(request()->routeIs('notifications.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg>{{ __('Notificaciones') }}</a>
-        <a href="{{ route('credentials.index') }}" @class(['current' => request()->routeIs('credentials.*', 'credential-templates.*')]) @if(request()->routeIs('credentials.*', 'credential-templates.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Gestión de Credenciales') }}</a>
+        <a href="{{ route('credentials.index') }}" @class(['current' => request()->routeIs('credentials.*')]) @if(request()->routeIs('credentials.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-shield"/></svg>{{ __('Gestión de Credenciales') }}</a>
+        <a href="{{ route('credential-templates.index') }}" @class(['current' => request()->routeIs('credential-templates.*')]) @if(request()->routeIs('credential-templates.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>{{ __('Plantillas') }}</a>
         @if($canContacts || $canOpportunities)
             <span class="nav-group-label">CRM</span>
             @if($canContacts)<a href="{{ route('contacts.index') }}" @class(['current' => request()->routeIs('contacts.*')]) @if(request()->routeIs('contacts.*')) aria-current="page" @endif><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg>{{ __('Contactos') }}</a>@endif

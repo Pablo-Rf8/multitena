@@ -9,13 +9,15 @@ use Illuminate\View\View;
 
 class PasswordController extends Controller
 {
-    public function edit(): View
+    public function edit(Request $request): View
     {
+        abort_if($request->session()->has('demo_preview'), 403);
         return view('auth.password');
     }
 
     public function update(Request $request, Audit $audit): RedirectResponse
     {
+        abort_if($request->session()->has('demo_preview'), 403);
         $data = $request->validateWithBag('accountPassword', [
             'current_password' => ['required', 'current_password'],
             'password' => ['required', 'string', 'min:12', 'confirmed'],
