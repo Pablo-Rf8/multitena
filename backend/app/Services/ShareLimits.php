@@ -30,11 +30,13 @@ class ShareLimits
             return null;
         }
 
+        $duration = (int) $data['duration_value'];
+
         return match ($data['duration_unit']) {
-            'hours' => now()->addHours($data['duration_value']),
-            'days' => now()->addDays($data['duration_value']),
-            'weeks' => now()->addWeeks($data['duration_value']),
-            'months' => now()->addMonthsNoOverflow($data['duration_value']),
+            'hours' => now()->addHours($duration),
+            'days' => now()->addDays($duration),
+            'weeks' => now()->addWeeks($duration),
+            'months' => now()->addMonthsNoOverflow($duration),
         };
     }
 

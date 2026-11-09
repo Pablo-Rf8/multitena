@@ -113,7 +113,7 @@ class CredentialSharingTest extends TestCase
             ->assertSee('value="months" selected', false);
         foreach (['hours', 'days', 'weeks', 'months'] as $unit) {
             $this->post(route('credentials.shares.store', $credential), [
-                'user_id' => $employee->id, 'duration_value' => 1, 'duration_unit' => $unit,
+                'user_id' => $employee->id, 'duration_value' => '1', 'duration_unit' => $unit,
             ])->assertRedirect();
             $share = CredentialShare::latest('id')->firstOrFail();
             $expected = match ($unit) {
@@ -175,7 +175,9 @@ class CredentialSharingTest extends TestCase
         $this->get(route('credentials.show', $credential))->assertOk()->assertDontSee('demo-secret')
             ->assertHeader('Cache-Control', 'no-store, private');
         $this->assertSame(1, $share->fresh()->used_accesses);
-        $this->post(route('credentials.favorite.store', $credential))->assertRedirect();
+        $this->post(route('credentials.favorite.store', $credential))
+            ->assertRedirect(route('credentials.index', ['section' => 'favorites']));
+        $this->assertSame(1, $share->fresh()->used_accesses);
         $this->postJson(route('credentials.reveal', [$credential, $field]))->assertOk()->assertJsonPath('value', 'demo-secret');
         $this->get(route('credentials.edit', $credential))->assertForbidden();
         $this->put(route('credentials.update', $credential), ['title' => 'Cambio', 'visibility' => 'shared'])->assertForbidden();

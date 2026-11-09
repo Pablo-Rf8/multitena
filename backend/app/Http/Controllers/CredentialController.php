@@ -297,7 +297,8 @@ class CredentialController extends Controller
         Gate::authorize('view', $credential);
         CredentialFavorite::firstOrCreate(['credential_id' => $credential->id, 'user_id' => $request->user()->id]);
 
-        return back()->with('status', 'Agregada a favoritas.');
+        return redirect()->route('credentials.index', ['section' => 'favorites'])
+            ->with('status', 'Agregada a favoritas.');
     }
 
     public function unfavorite(Request $request, Credential $credential): RedirectResponse
@@ -306,7 +307,9 @@ class CredentialController extends Controller
         abort_unless($credential->company_id === $request->user()->company_id, 404);
         $credential->favorites()->where('user_id', $request->user()->id)->delete();
 
-        return back()->with('status', 'Quitada de favoritas.');
+        return redirect()->route('credentials.index', [
+            'section' => $credential->owner_id === $request->user()->id ? 'mine' : 'shared',
+        ])->with('status', 'Quitada de favoritas.');
     }
 
     private function validatedValues(Request $request, CredentialTemplate $template, ?Credential $credential): array
