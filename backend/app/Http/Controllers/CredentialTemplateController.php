@@ -51,11 +51,19 @@ class CredentialTemplateController extends Controller
         return response()->view('credentials.templates.show', [
             'template' => $template,
             'canShare' => Gate::allows('share', $template),
-            'users' => Gate::allows('share', $template)
-                ? User::where('company_id', $template->company_id)->where('role', 'employee')
-                    ->where('is_active', true)->where('approval_status', 'approved')->orderBy('name')->get() : collect(),
-            'shares' => Gate::allows('share', $template) ? $template->shares()->with('user')->latest()->get() : collect(),
         ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
+    }
+
+    public function sharing(CredentialTemplate $template): View
+    {
+        Gate::authorize('share', $template);
+
+        return view('credentials.templates.sharing', [
+            'template' => $template,
+            'users' => User::where('company_id', $template->company_id)->where('role', 'employee')
+                ->where('is_active', true)->where('approval_status', 'approved')->orderBy('name')->get(),
+            'shares' => $template->shares()->with('user')->latest()->get(),
+        ]);
     }
 
     public function create(): View

@@ -59,15 +59,20 @@ class CredentialSharingTest extends TestCase
         }
 
         $this->get(route('credentials.show', $credential))->assertOk()
-            ->assertSee('Compartir en solo lectura')
+            ->assertSee('Compartir en solo lectura')->assertSee('Historial de aperturas')
+            ->assertSee('Agregar a favoritas');
+        $this->get(route('credentials.sharing', $credential))->assertOk()
             ->assertSee('action="'.route('credentials.shares.store', $credential).'"', false)
             ->assertSee('name="max_accesses"', false)
             ->assertSee('value="hours"', false)->assertSee('value="days"', false)
             ->assertSee('value="weeks"', false)->assertSee('value="months"', false)
-            ->assertSee('name="can_reveal"', false)->assertSee('Historial de aperturas')
-            ->assertSee('Agregar a favoritas');
+            ->assertSee('name="can_reveal"', false);
+        $this->get(route('credentials.permissions', $credential))->assertOk()->assertSee('Guardar permiso');
+        $this->get(route('credentials.history', $credential))->assertOk()->assertSee('Historial de aperturas');
         $this->get(route('credential-templates.show', $credential->template))->assertOk()
-            ->assertSee('Compartir plantilla vacía')->assertSee('value="months"', false);
+            ->assertSee('Compartir plantilla vacía');
+        $this->get(route('credential-templates.sharing', $credential->template))->assertOk()
+            ->assertSee('value="months"', false);
 
         $this->post(route('credentials.shares.store', $credential), [
             'user_id' => $employee->id, 'max_accesses' => 3,
@@ -76,7 +81,11 @@ class CredentialSharingTest extends TestCase
             ->assertSee('Agregar a favoritas')->assertDontSee('Compartir en solo lectura')
             ->assertDontSee('Editar credencial')->assertDontSee('data-reveal-url=', false)
             ->assertDontSee('data-copy-secret', false);
+        $this->get(route('credentials.sharing', $credential))->assertForbidden();
+        $this->get(route('credentials.permissions', $credential))->assertForbidden();
+        $this->get(route('credentials.history', $credential))->assertForbidden();
         $this->get(route('credential-templates.show', $credential->template))->assertForbidden();
+        $this->get(route('credential-templates.sharing', $credential->template))->assertForbidden();
     }
 
     public function test_filters_and_duration_units_are_applied_from_rendered_forms(): void
@@ -100,7 +109,7 @@ class CredentialSharingTest extends TestCase
             'user_id' => $employee->id, 'max_accesses' => 0,
             'duration_value' => 2, 'duration_unit' => 'weeks', 'can_reveal' => 1,
         ])->assertSessionHasErrors('max_accesses');
-        $this->get(route('credentials.show', $credential))->assertOk()
+        $this->get(route('credentials.sharing', $credential))->assertOk()
             ->assertSee('name="duration_value" min="1" max="365" value="2"', false)
             ->assertSee('value="weeks" selected', false)
             ->assertSee('name="can_reveal" value="1" checked', false);
@@ -108,7 +117,7 @@ class CredentialSharingTest extends TestCase
             'user_id' => $employee->id, 'max_accesses' => 0,
             'duration_value' => 3, 'duration_unit' => 'months',
         ])->assertSessionHasErrors('max_accesses');
-        $this->get(route('credential-templates.show', $credential->template))->assertOk()
+        $this->get(route('credential-templates.sharing', $credential->template))->assertOk()
             ->assertSee('name="duration_value" min="1" max="365" value="3"', false)
             ->assertSee('value="months" selected', false);
         foreach (['hours', 'days', 'weeks', 'months'] as $unit) {

@@ -1,0 +1,37 @@
+.compact-dashboard { max-width: 1080px; }
+.compact-dashboard .minimal-page-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.compact-dashboard .minimal-page-head .eyebrow { margin-bottom: 4px; color: var(--brand-primary); }
+.compact-dashboard .minimal-page-head h1 { margin: 0; }
+.compact-dashboard .head-divider { margin: 0 4px; color: #a2abad; }
+.compact-dashboard .head-actions { display: flex; align-items: center; gap: 8px; }
+.compact-dashboard .head-actions .icon { width: 14px; height: 14px; }
+.compact-dashboard .quiet-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 18px 0 20px; border-bottom: 1px solid var(--line); }
+.compact-dashboard .quiet-metrics > * { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 0 20px; border-right: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.compact-dashboard .quiet-metrics > :first-child { padding-left: 0; }
+.compact-dashboard .quiet-metrics > :last-child { border-right: 0; }
+.compact-dashboard .quiet-metrics strong { font-size: 1.34rem; line-height: 1.15; font-weight: 680; letter-spacing: -.03em; }
+.compact-dashboard .quiet-metrics span { color: var(--muted); font-size: .76rem; }
+.compact-dashboard .quiet-metrics a:hover strong { color: var(--brand-primary); }
+.compact-dashboard .dashboard-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding-top: 22px; }
+.compact-dashboard .work-section + .work-section { margin-top: 24px; }
+.compact-dashboard .list-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 9px; }
+.compact-dashboard .list-heading h2 { margin: 0; font-size: .89rem; font-weight: 670; }
+.compact-dashboard .list-heading a { font-size: .75rem; text-decoration: none; }
+.compact-dashboard .minimal-link-list { border-top: 1px solid var(--line); }
+.compact-dashboard .minimal-link-list a { display: grid; grid-template-columns: 17px minmax(102px, .72fr) minmax(0, 1fr) 12px; align-items: center; gap: 10px; min-height: 46px; padding: 7px 1px; border-bottom: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.compact-dashboard .minimal-link-list a:hover { color: var(--brand-primary); }
+.compact-dashboard .minimal-link-list .icon { width: 16px; height: 16px; color: var(--brand-primary); }
+.compact-dashboard .minimal-link-list strong { font-size: .8rem; font-weight: 600; }
+.compact-dashboard .minimal-link-list span { color: var(--muted); font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compact-dashboard .minimal-link-list b { color: #a0a8aa; font-size: .86rem; font-weight: 400; }
+.compact-dashboard .dashboard-activity .table-scroll { overflow: visible; }
+.compact-dashboard .dashboard-activity table { min-width: 0; width: 100%; }
+.compact-dashboard .dashboard-activity thead { display: none; }
+.compact-dashboard .dashboard-activity tr { border-bottom: 1px solid var(--line); }
+.compact-dashboard .dashboard-activity td { padding: 10px 2px; border: 0; font-size: .76rem; }
+.compact-dashboard .dashboard-activity td:first-child { width: 118px; color: var(--muted); font-size: .69rem; white-space: nowrap; }
+.compact-dashboard .dashboard-activity th:nth-child(n+3), .compact-dashboard .dashboard-activity td:nth-child(n+3) { display: none; }
+.compact-dashboard .dashboard-activity .empty-state { padding: 16px; text-align: left; font-size: .76rem; }
+.app-shell .page:has(> .compact-dashboard) { min-height: 0; }
+@media (max-width: 960px) { .compact-dashboard .dashboard-columns { grid-template-columns: 1fr; gap: 24px; } .compact-dashboard .quiet-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; } .compact-dashboard .quiet-metrics > :nth-child(2) { border-right: 0; } .compact-dashboard .quiet-metrics > :nth-child(3) { padding-left: 0; } }
+@media (max-width: 600px) { .compact-dashboard .minimal-page-head { align-items: start; flex-direction: column; } .compact-dashboard .head-actions { width: 100%; } .compact-dashboard .head-actions .button { flex: 1; } .compact-dashboard .minimal-link-list a { grid-template-columns: 17px minmax(0, 1fr) 12px; } .compact-dashboard .minimal-link-list span { display: none; } }

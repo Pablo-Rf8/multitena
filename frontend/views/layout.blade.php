@@ -17,7 +17,15 @@
     <title>@yield('title', $brandName)</title>
     <link rel="stylesheet" href="{{ route('assets.css') }}">
     <link rel="stylesheet" href="{{ route('assets.theme') }}?v={{ filemtime(base_path('../frontend/css/theme.css')) }}">
+    @hasSection('page-css')
+        @php($pageCss = trim($__env->yieldContent('page-css')))
+        <link rel="stylesheet" href="{{ route('assets.page.css', ['name' => $pageCss]) }}?v={{ filemtime(base_path('../frontend/css/pages/'.$pageCss.'.css')) }}">
+    @endif
     <script src="{{ route('assets.js') }}?v={{ filemtime(base_path('../frontend/js/app.js')) }}" defer></script>
+    @hasSection('page-js')
+        @php($pageJs = trim($__env->yieldContent('page-js')))
+        <script src="{{ route('assets.page.js', ['name' => $pageJs]) }}?v={{ filemtime(base_path('../frontend/js/pages/'.$pageJs.'.js')) }}" defer></script>
+    @endif
 </head>
 <body class="{{ $isPlatform ? 'theme-platform' : ($brandCompany ? 'theme-tenant' : 'theme-public') }}" style="{{ $themeStyle }}">
 <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -45,8 +53,8 @@
                 <a class="brand" href="{{ route('dashboard') }}">
                     @if(!$isPlatform && $brandLogo)
                         <img class="brand-logo" src="{{ $brandLogo }}" alt="" width="42" height="42">
-                    @else
-                        <span class="brand-mark" aria-hidden="true">{{ $isPlatform ? 'M' : mb_strtoupper(mb_substr($brandName, 0, 1)) }}</span>
+                    @elseif($isPlatform)
+                        <span class="brand-mark" aria-hidden="true">M</span>
                     @endif
                     <span class="brand-copy"><strong>{{ $brandName }}</strong><small>{{ $isPlatform ? __('Administración global') : __('Espacio de trabajo') }}</small></span>
                 </a>
@@ -67,6 +75,12 @@
             <div class="header-inner">
                 @if($viewer)<button class="menu-toggle" type="button" data-sidebar-open aria-controls="sidebar" aria-expanded="false" aria-label="{{ __('Abrir menú') }}">☰</button>@endif
                 <div class="header-context"><span class="eyebrow">{{ $isPlatform ? __('Plataforma') : ($brandCompany?->name ?? __('Acceso')) }}</span><strong>@yield('page-label', $viewer ? (request()->routeIs('dashboard') ? __('Panel de control') : trim(explode('·', $__env->yieldContent('title', __('Espacio de trabajo')))[0])) : __('Acceso seguro'))</strong></div>
+                @if($viewer)
+                    <div class="header-tools">
+                        @include('partials.language-switcher')
+                        <button class="header-account" type="button" data-account-open aria-label="{{ __('Abrir mi cuenta') }}" aria-haspopup="dialog" aria-controls="account-dialog">{{ mb_strtoupper(mb_substr($viewer->name, 0, 1)) }}</button>
+                    </div>
+                @endif
                 @unless($viewer)
                     @include('partials.language-switcher')
                     <span class="public-brand">@if($brandLogo)<img src="{{ $brandLogo }}" alt="" width="32" height="32">@endif {{ $brandName }}</span>
@@ -96,6 +110,9 @@
             <button type="button" class="dialog-close" data-account-close aria-label="{{ __('Cerrar ventana') }}"><svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg></button>
         </div>
         <div data-account-menu>
+            <nav class="account-menu" aria-label="{{ __('Mi cuenta') }}">
+                <a href="{{ route('profile.show') }}"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg><span>{{ __('Mi perfil') }}<small>{{ __('Datos personales y preferencias') }}</small></span></a>
+            </nav>
             <div class="account-language">@include('partials.language-switcher', ['inAccount' => true])</div>
             @if($viewer->role === 'company_admin')
                 <nav class="account-menu" aria-label="{{ __('Configuración de la empresa') }}">

@@ -1,5 +1,7 @@
 @extends('layout')
 @section('title', ($template ? __('Editar plantilla') : __('Nueva plantilla')).' · Multitena')
+@section('page-js', 'credential-templates-form')
+@section('page-css', 'credential-templates-form')
 @section('content')
 <section class="panel"><div class="section-head"><div><p class="eyebrow">{{ __('Gestión de Credenciales') }}</p><h1>{{ $template ? __('Editar plantilla') : __('Nueva plantilla') }}</h1><p class="intro">{{ __('Agregá, ordená y marcá los campos obligatorios.') }}</p></div></div>
 @if($errors->any())<div class="notice notice-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

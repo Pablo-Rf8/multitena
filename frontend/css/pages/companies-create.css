@@ -1,0 +1,13 @@
+.company-create-page { width: 100%; }
+.company-create-page .section-head { margin-bottom: 14px; }
+.company-create-form { padding: 18px; border: 1px solid var(--line); border-radius: 14px; }
+.company-create-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 14px; }
+.company-create-field { display: flex; flex-direction: column; min-width: 0; }
+.company-create-field label { margin-bottom: 6px; color: var(--ink); font-size: .76rem; font-weight: 650; }
+.company-create-field input, .company-create-field select { width: 100% !important; max-width: none !important; min-height: 41px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font: inherit; }
+.company-create-field .hint, .company-create-field .field-error { margin: 5px 0 0; }
+.company-create-note { display: grid; gap: 3px; padding: 13px; margin-top: 17px; border: 1px solid var(--line); border-radius: 10px; background: #f7f8f8; }
+.company-create-note strong { font-size: .77rem; }
+.company-create-note span { color: var(--muted); font-size: .72rem; }
+.company-create-form .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 15px; }
+@media (max-width: 720px) { .company-create-fields { grid-template-columns: 1fr; } }

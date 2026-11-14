@@ -1,0 +1,11 @@
+.settings-code { display: inline-flex; align-items: center; gap: 12px; margin: 8px 0 24px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: .78rem; }
+.settings-code span { color: var(--muted); }
+.settings-code strong { font-weight: 650; letter-spacing: .04em; }
+.settings-form { max-width: 800px; }
+.settings-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; }
+.panel .settings-form .settings-field { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-width: 0; margin: 0; color: var(--ink); font-size: .79rem; font-weight: 600; }
+.settings-field small { margin-top: -4px; color: var(--muted); font-size: .73rem; font-weight: 400; }
+.settings-field-wide { grid-column: 1 / -1; }
+.settings-field input, .settings-field select { width: 100%; min-height: 43px; font-weight: 400; }
+.settings-actions { margin-top: 26px; }
+@media (max-width: 760px) { .settings-fields { grid-template-columns: 1fr; } .settings-field-wide { grid-column: auto; } }

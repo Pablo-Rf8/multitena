@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\ActivityLog;
 use App\Models\Contact;
 use App\Models\Opportunity;
 use App\Models\User;
@@ -15,6 +16,20 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function branches(Request $request): View
+    {
+        return view('companies.branches', [
+            'company' => $request->user()->company()->with(['branches' => fn ($query) => $query->orderByDesc('is_central')->orderBy('name'), 'users' => fn ($query) => $query->whereIn('role', ['company_admin', 'branch_admin'])])->firstOrFail(),
+        ]);
+    }
+
+    public function team(Request $request): View
+    {
+        return view('companies.team', [
+            'company' => $request->user()->company()->with(['users' => fn ($query) => $query->whereIn('role', ['company_admin', 'branch_admin']), 'branches'])->firstOrFail(),
+        ]);
+    }
+
     public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
@@ -65,6 +80,9 @@ class DashboardController extends Controller
             'wonAmount' => Opportunity::where('company_id', $user->company_id)
                 ->when($user->role === 'branch_admin', fn ($q) => $q->where('branch_id', $user->branch_id))
                 ->where('stage', 'won')->sum('amount_cents'),
+            'recentActivity' => $user->role === 'company_admin'
+                ? ActivityLog::where('company_id', $user->company_id)->with('actor')->orderByDesc('created_at')->limit(4)->get()
+                : collect(),
         ]);
     }
 }

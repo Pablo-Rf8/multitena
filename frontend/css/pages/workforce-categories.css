@@ -1,0 +1,28 @@
+.workforce-list { display: grid; gap: 0; }
+.workforce-item { padding: 10px 2px; border-bottom: 1px solid var(--line); background: transparent; }
+.workforce-person strong { font-size: .81rem; }
+.workforce-person .muted, .workforce-item > .muted { font-size: .72rem; }
+.workforce-item .actions { margin: 3px 0 0; }
+.category-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 330px); gap: 28px; margin-top: 17px; }
+.category-list h2, .category-editor h2 { margin: 0 0 6px; font-size: .9rem; }
+.category-editor { padding: 0 0 0 25px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; }
+.category-editor .form-stack { margin: 12px 0 0; }
+.category-list .workforce-list { margin-top: 11px; }
+.category-list .inline-disclosure > summary { width: 100%; justify-content: space-between; border: 0; box-shadow: none; }
+.category-list .inline-disclosure[open] { background: transparent; }
+.category-list .inline-disclosure > form { margin-top: 8px; }
+.permission-list label { display: flex !important; align-items: center; gap: 7px; min-height: 28px; }
+.permission-list input[type=checkbox] { min-height: auto; margin: 0; }
+@media (max-width: 760px) { .category-layout { grid-template-columns: 1fr; gap: 22px; } .category-editor { padding: 17px 0 0; border-left: 0; border-top: 1px solid var(--line); } }
+
+.category-layout { grid-template-columns: minmax(0, .9fr) minmax(340px, 1.1fr); gap: 14px; margin-top: 18px; }
+.category-list h2, .category-editor h2 { font-size: .94rem; }
+.category-list .workforce-list { display: grid; gap: 8px; }
+.category-list .workforce-item { padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.category-list .inline-disclosure > summary { min-height: 58px; padding: 12px 14px; }
+.category-list .inline-disclosure[open] > summary { background: #f7f8f8; }
+.category-list .inline-disclosure > form { padding: 0 14px 14px; }
+.category-editor { min-height: 340px; padding: 19px; border: 1px solid var(--line); border-radius: 13px; background: #f7f8f8; }
+.category-editor .compact-form { max-width: none; }
+.category-editor .permission-list { padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+@media (max-width: 900px) { .category-layout { grid-template-columns: 1fr; } .category-editor { min-height: 0; } }

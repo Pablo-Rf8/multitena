@@ -1,0 +1,11 @@
+.workforce-list { display: grid; gap: 0; }
+.workforce-item { padding: 10px 2px; border-bottom: 1px solid var(--line); background: transparent; }
+.workforce-person strong { font-size: .81rem; }
+.workforce-person .muted, .workforce-item > .muted { font-size: .72rem; }
+.workforce-item .actions { margin: 3px 0 0; }
+
+.workforce-list { gap: 8px; }
+.workforce-item { padding: 13px 15px; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+.workforce-person { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.workforce-person strong { font-size: .85rem; }
+.workforce-item .actions { margin: 10px 0 0; }

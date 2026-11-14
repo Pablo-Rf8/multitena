@@ -1,24 +1,19 @@
 @extends('layout')
 
 @section('title', __('Empresas').' · Multitena')
+@section('page-css', 'companies-index')
 
 @section('content')
-<section class="panel">
-    <div class="section-head">
-        <div>
-            <p class="eyebrow">{{ __('Superadministración') }}</p>
-            <h1>{{ __('Vista general de la plataforma') }}</h1>
-            <p class="intro">{{ __('Empresas, accesos y operación en un solo lugar.') }}</p>
-        </div>
-        <a class="button button-primary" href="{{ route('companies.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>{{ __('Crear empresa') }}</a>
-    </div>
-    <div class="stats">
-        <div class="stat"><strong>{{ $companyCount }}</strong><span>{{ __('Empresas') }}</span></div>
-        <div class="stat"><strong>{{ $userCount }}</strong><span>{{ __('Usuarios') }}</span></div>
-        <div class="stat"><strong>{{ $branchCount }}</strong><span>{{ __('Sucursales') }}</span></div>
-        <div class="stat"><strong>{{ $pendingCount }}</strong><span>{{ __('Solicitudes pendientes') }}</span></div>
-    </div>
-    <p class="muted">{{ __('Gestión de Credenciales') }}: {{ $credentialTemplateCount }} {{ __('plantillas') }} · {{ $credentialCount }} {{ __('registros') }}. {{ __('Solo estadísticas; los datos y secretos pertenecen a cada empresa.') }}</p>
+<div class="minimal-home platform-home">
+    <header class="minimal-page-head"><div><p class="eyebrow">{{ __('Administración global') }}</p><h1>{{ __('Empresas') }}</h1><p class="intro">{{ __('Organizaciones y accesos de la plataforma') }}</p></div><div class="head-actions"><a class="button button-ghost" href="{{ route('employees.create') }}">{{ __('Registrar empleado') }}</a><a class="button button-primary" href="{{ route('companies.create') }}"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg>{{ __('Crear empresa') }}</a></div></header>
+    <section class="quiet-metrics" aria-label="{{ __('Resumen de plataforma') }}">
+        <div><strong>{{ $companyCount }}</strong><span>{{ __('Empresas') }} · {{ $activeCount }} {{ __('activas') }}</span></div>
+        <div><strong>{{ $userCount }}</strong><span>{{ __('Usuarios') }}</span></div>
+        <div><strong>{{ $branchCount }}</strong><span>{{ __('Sucursales') }}</span></div>
+        <div><strong>{{ $pendingCount }}</strong><span>{{ __('Solicitudes pendientes') }}</span></div>
+    </section>
+    <section class="work-section" aria-labelledby="companies-title">
+    <div class="list-heading"><div><h2 id="companies-title">{{ __('Directorio de empresas') }}</h2><span>{{ $companyCount }} {{ __('registradas') }}</span></div><a href="{{ route('credentials.index') }}">{{ __('Compartidas conmigo') }} →</a></div>
     <form method="get" action="{{ route('dashboard') }}" class="filter-bar">
         <label class="sr-only" for="company-search">{{ __('Buscar empresa') }}</label>
         <input id="company-search" name="q" type="search" value="{{ request('q') }}" placeholder="{{ __('Buscar empresa') }}">
@@ -52,5 +47,10 @@
         </div>
     @endif
     {{ $companies->links('pagination.simple') }}
-</section>
+    </section>
+    @if($pendingCount > 0)
+    <div class="platform-pending" role="status"><strong>{{ __('Solicitudes pendientes') }}</strong><span>{{ $pendingCount }} {{ __('empleados esperan aprobación en sus empresas.') }}</span><a class="button button-ghost button-sm" href="#companies-title">{{ __('Revisar empresas') }}</a></div>
+    @endif
+    <p class="minimal-footnote">{{ __('Gestión de Credenciales') }} · {{ $credentialCount }} {{ $credentialCount === 1 ? __('registro') : __('registros') }} · {{ $credentialTemplateCount }} {{ $credentialTemplateCount === 1 ? __('plantilla') : __('plantillas') }}. {{ __('Solo estadísticas generales; los secretos pertenecen a cada empresa.') }}</p>
+</div>
 @endsection

@@ -53,6 +53,28 @@ class CompanyController extends Controller
         ]);
     }
 
+    public function branches(Company $company): View
+    {
+        return view('companies.platform-branches', [
+            'company' => $company->load(['branches' => fn ($query) => $query->orderByDesc('is_central')->orderBy('name')]),
+        ]);
+    }
+
+    public function admins(Company $company): View
+    {
+        return view('companies.admins', [
+            'company' => $company->load(['branches', 'users' => fn ($query) => $query->whereIn('role', ['company_admin', 'branch_admin'])->orderBy('name')]),
+        ]);
+    }
+
+    public function activity(Company $company): View
+    {
+        return view('companies.activity', [
+            'company' => $company,
+            'activity' => ActivityLog::with('actor')->where('company_id', $company->id)->latest()->limit(50)->get(),
+        ]);
+    }
+
     public function employees(Company $company): View
     {
         return view('companies.employees', [

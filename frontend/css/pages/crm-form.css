@@ -1,0 +1,13 @@
+.crm-form-page { width: 100%; }
+.crm-form-page .back-link { margin-bottom: 14px; }
+.crm-form-page .section-head { margin-bottom: 14px; }
+.crm-form { padding: 18px; border: 1px solid var(--line); border-radius: 14px; }
+.crm-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 17px 14px; }
+.crm-field { display: flex; flex-direction: column; min-width: 0; }
+.crm-field-wide { grid-column: 1 / -1; }
+.crm-field label { margin-bottom: 6px; color: var(--ink); font-size: .76rem; font-weight: 650; }
+.crm-field input, .crm-field select, .crm-field textarea { width: 100% !important; max-width: none !important; min-height: 41px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); font: inherit; }
+.crm-field textarea { resize: vertical; }
+.crm-field .field-error, .crm-field .hint { margin: 5px 0 0; }
+.crm-form .form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+@media (max-width: 720px) { .crm-fields { grid-template-columns: 1fr; } .crm-field-wide { grid-column: auto; } }

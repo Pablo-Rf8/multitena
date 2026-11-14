@@ -1,6 +1,7 @@
 @extends('layout')
 
 @section('title', $loginCompany ? __('Ingresar').' · '.$loginCompany->name : ($platformLogin ? __('Acceso global').' · Multitena' : __('Elegir empresa').' · Multitena'))
+@section('page-css', 'auth-login')
 
 @section('content')
 <section class="panel narrow login-panel">

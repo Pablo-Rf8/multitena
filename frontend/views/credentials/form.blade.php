@@ -1,5 +1,6 @@
 @extends('layout')
 @section('title', ($credential ? __('Editar credencial') : __('Nueva credencial')).' · Multitena')
+@section('page-css', 'credentials-form')
 @section('content')
 <section class="panel"><div class="section-head"><div><p class="eyebrow">{{ __('Gestión de Credenciales') }}</p><h1>{{ $credential ? __('Editar credencial') : __('Nueva credencial') }}</h1></div></div>
 @if($errors->any())<div class="notice notice-error" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

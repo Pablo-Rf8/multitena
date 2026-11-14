@@ -163,6 +163,50 @@ class CredentialController extends Controller
         ])->header('Cache-Control', 'no-store, private')->header('Pragma', 'no-cache');
     }
 
+    public function sharing(Credential $credential): View
+    {
+        Gate::authorize('share', $credential);
+        $credential->load(['shares.user', 'template']);
+
+        return view('credentials.sharing', [
+            'credential' => $credential,
+            'users' => $this->shareableUsers($credential),
+            'superAdmins' => $credential->visibility === 'shared'
+                ? User::where('role', 'super_admin')->whereNull('company_id')->where('is_active', true)->orderBy('name')->get()
+                : collect(),
+        ]);
+    }
+
+    public function permissions(Credential $credential): View
+    {
+        Gate::authorize('share', $credential);
+        $credential->load(['grants.user', 'template']);
+
+        return view('credentials.permissions', [
+            'credential' => $credential,
+            'users' => $this->shareableUsers($credential),
+        ]);
+    }
+
+    public function history(Credential $credential): View
+    {
+        Gate::authorize('share', $credential);
+
+        return view('credentials.history', [
+            'credential' => $credential,
+            'accesses' => $credential->accesses()->with('user')->latest('opened_at')->simplePaginate(20, ['*'], 'access_page'),
+        ]);
+    }
+
+    private function shareableUsers(Credential $credential): \Illuminate\Database\Eloquent\Collection
+    {
+        return User::where('company_id', $credential->company_id)->where('is_active', true)
+            ->where('id', '!=', $credential->owner_id)
+            ->where(fn ($query) => $query->where('role', '!=', 'employee')->orWhere('approval_status', 'approved'))
+            ->when($credential->visibility === 'private', fn ($query) => $query->whereIn('role', ['company_admin', 'branch_admin']))
+            ->orderBy('name')->get();
+    }
+
     public function edit(Request $request, Credential $credential): View
     {
         Gate::authorize('update', $credential);

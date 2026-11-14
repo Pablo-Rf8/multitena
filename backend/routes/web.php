@@ -19,6 +19,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\CredentialTemplateController;
 use App\Http\Controllers\DemoPreviewController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -27,6 +28,16 @@ Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update
 Route::get('/assets/app.css', fn () => response()->file(base_path('../frontend/css/app.css'), ['Content-Type' => 'text/css']))->name('assets.css');
 Route::get('/assets/app.js', fn () => response()->file(base_path('../frontend/js/app.js'), ['Content-Type' => 'text/javascript']))->name('assets.js');
 Route::get('/assets/theme.css', fn () => response()->file(base_path('../frontend/css/theme.css'), ['Content-Type' => 'text/css']))->name('assets.theme');
+Route::get('/assets/pages/{name}.css', function (string $name) {
+    $file = base_path('../frontend/css/pages/'.$name.'.css');
+    abort_unless(is_file($file), 404);
+    return response()->file($file, ['Content-Type' => 'text/css']);
+})->where('name', '[a-z][a-z0-9-]*')->name('assets.page.css');
+Route::get('/assets/pages/{name}.js', function (string $name) {
+    $file = base_path('../frontend/js/pages/'.$name.'.js');
+    abort_unless(is_file($file), 404);
+    return response()->file($file, ['Content-Type' => 'text/javascript']);
+})->where('name', '[a-z][a-z0-9-]*')->name('assets.page.js');
 Route::get('/assets/demo/pepsi.svg', fn () => response()->file(base_path('../frontend/assets/pepsi-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-pepsi');
 Route::get('/assets/demo/coca-cola.svg', fn () => response()->file(base_path('../frontend/assets/coca-cola-demo.svg'), ['Content-Type' => 'image/svg+xml']))->name('assets.demo-coca-cola');
 Route::get('/assets/company-logo/{code}', [BrandingController::class, 'publicLogo'])->name('branding.public-logo');
@@ -47,6 +58,9 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/demo/exit', [DemoPreviewController::class, 'stop'])->name('demo.exit');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/notifications', [AccessNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('/notifications/{notification}/read', [AccessNotificationController::class, 'read'])->name('notifications.read');
     Route::get('/account/password', [PasswordController::class, 'edit'])->name('password.edit');
@@ -62,6 +76,7 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::get('/credential-templates/create', [CredentialTemplateController::class, 'create'])->name('credential-templates.create');
         Route::post('/credential-templates', [CredentialTemplateController::class, 'store'])->name('credential-templates.store');
         Route::get('/credential-templates/{template}', [CredentialTemplateController::class, 'show'])->name('credential-templates.show');
+        Route::get('/credential-templates/{template}/sharing', [CredentialTemplateController::class, 'sharing'])->name('credential-templates.sharing');
         Route::get('/credential-templates/{template}/edit', [CredentialTemplateController::class, 'edit'])->name('credential-templates.edit');
         Route::put('/credential-templates/{template}', [CredentialTemplateController::class, 'update'])->name('credential-templates.update');
         Route::delete('/credential-templates/{template}', [CredentialTemplateController::class, 'destroy'])->name('credential-templates.destroy');
@@ -70,6 +85,9 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::get('/credentials/create', [CredentialController::class, 'create'])->name('credentials.create');
         Route::post('/credentials', [CredentialController::class, 'store'])->name('credentials.store');
         Route::get('/credentials/{credential}/edit', [CredentialController::class, 'edit'])->name('credentials.edit');
+        Route::get('/credentials/{credential}/sharing', [CredentialController::class, 'sharing'])->name('credentials.sharing');
+        Route::get('/credentials/{credential}/permissions', [CredentialController::class, 'permissions'])->name('credentials.permissions');
+        Route::get('/credentials/{credential}/history', [CredentialController::class, 'history'])->name('credentials.history');
         Route::put('/credentials/{credential}', [CredentialController::class, 'update'])->name('credentials.update');
         Route::delete('/credentials/{credential}', [CredentialController::class, 'destroy'])->name('credentials.destroy');
         Route::post('/credentials/{credential}/grants', [CredentialController::class, 'grant'])->name('credentials.grants.store');
@@ -98,6 +116,12 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::get('/branding', [BrandingController::class, 'edit'])->name('branding.edit');
         Route::put('/branding', [BrandingController::class, 'update'])->name('branding.update');
         Route::get('/workforce', [WorkforceController::class, 'index'])->name('workforce.index');
+        Route::get('/workforce/categories', [WorkforceController::class, 'categories'])->name('workforce.categories.index');
+        Route::get('/workforce/settings', [WorkforceController::class, 'settingsPage'])->name('workforce.settings.edit');
+        Route::get('/workforce/devices', [WorkforceController::class, 'devices'])->name('workforce.devices.index');
+        Route::get('/workforce/sessions', [WorkforceController::class, 'sessions'])->name('workforce.sessions.index');
+        Route::get('/branches', [DashboardController::class, 'branches'])->name('branches.index');
+        Route::get('/team', [DashboardController::class, 'team'])->name('team.index');
         Route::get('/workforce/employees/create', [WorkforceController::class, 'createForCompany'])->name('workforce.employees.create');
         Route::post('/workforce/employees', [WorkforceController::class, 'storeForCompany'])->name('workforce.employees.store');
         Route::post('/workforce/categories', [WorkforceController::class, 'category'])->name('workforce.categories');
@@ -131,6 +155,9 @@ Route::middleware(['auth', 'demo_preview', 'active_account'])->group(function ()
         Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
         Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
         Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+        Route::get('/companies/{company}/branches', [CompanyController::class, 'branches'])->name('companies.branches');
+        Route::get('/companies/{company}/admins', [CompanyController::class, 'admins'])->name('companies.admins');
+        Route::get('/companies/{company}/activity', [CompanyController::class, 'activity'])->name('companies.activity');
         Route::get('/companies/{company}/employees', [CompanyController::class, 'employees'])->name('companies.employees');
         Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
         Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');

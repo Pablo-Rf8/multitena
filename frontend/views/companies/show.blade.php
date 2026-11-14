@@ -35,54 +35,11 @@
     </form>
     </div></details>
 
-    <details class="disclosure"><summary>{{ __('Sucursales') }} <small>{{ $company->branches->count() }} {{ __('registradas') }}</small></summary><div class="disclosure-body">
-    <div class="table-scroll">
-        <table>
-            <thead><tr><th>{{ __('Nombre') }}</th><th>{{ __('Estado') }}</th><th>{{ __('Dirección') }}</th></tr></thead>
-            <tbody>
-                @foreach($company->branches as $branch)
-                    <tr><td>{{ $branch->name }} @if($branch->is_central)<span class="tag">{{ __('Central') }}</span>@endif</td><td>{{ $branch->is_active ? __('Activa') : __('Suspendida') }}</td><td>{{ $branch->address ?: '—' }}</td></tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    </div></details>
-    <details class="disclosure"><summary>{{ __('Administradores') }} <small>{{ $company->users->whereIn('role', ['company_admin', 'branch_admin'])->count() }} {{ __('registrados') }}</small></summary><div class="disclosure-body">
-    <div class="section-head section-subhead">
-        <h2>{{ __('Administradores de empresa') }}</h2>
-        <a class="button button-ghost" href="{{ route('company-admins.create', $company) }}">{{ __('Agregar administrador') }}</a>
-    </div>
-    <div class="table-scroll">
-        <table>
-            <thead><tr><th>{{ __('Nombre') }}</th><th>{{ __('Correo') }}</th><th>{{ __('Estado') }}</th><th>{{ __('Último ingreso') }}</th><th>{{ __('Acciones') }}</th></tr></thead>
-            <tbody>
-                @foreach($company->users->where('role', 'company_admin') as $member)
-                    <tr>
-                        <td>{{ $member->name }}</td><td>{{ $member->email }}</td>
-                        <td>{{ $member->is_active ? __('Activo') : __('Suspendido') }}</td>
-                        <td>{{ $member->last_login_at?->format('d/m/Y H:i') ?? __('Nunca') }}</td>
-                        <td>
-                            <a class="button button-ghost button-sm" href="{{ route('company-admins.edit', [$company, $member]) }}">{{ __('Editar') }}</a>
-                            <form method="post" action="{{ route('company-admins.status', [$company, $member]) }}" class="inline-form" data-confirm="{{ $member->is_active ? __('¿Suspender este administrador?') : __('¿Activar este administrador?') }}">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="is_active" value="{{ $member->is_active ? '0' : '1' }}">
-                                <button type="submit" class="button button-ghost button-sm {{ $member->is_active ? 'button-danger' : '' }}">{{ $member->is_active ? __('Suspender') : __('Activar') }}</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <h2>{{ __('Administradores de sucursal') }}</h2>
-    <div class="table-scroll"><table><thead><tr><th>{{ __('Nombre') }}</th><th>{{ __('Correo') }}</th><th>{{ __('Sucursal') }}</th><th>{{ __('Estado') }}</th></tr></thead><tbody>
-        @forelse($company->users->where('role', 'branch_admin') as $member)
-            <tr><td>{{ $member->name }}</td><td>{{ $member->email }}</td><td>{{ $company->branches->firstWhere('id', $member->branch_id)?->name ?? '—' }}</td><td>{{ $member->is_active ? __('Activo') : __('Suspendido') }}</td></tr>
-        @empty<tr><td colspan="4">{{ __('Sin administradores de sucursal.') }}</td></tr>@endforelse
-    </tbody></table></div>
-    </div></details>
-    <details class="disclosure"><summary>{{ __('Actividad reciente') }}</summary><div class="disclosure-body">
-    @include('activity.table', ['activity' => $activity])
-    </div></details>
+    <div class="module-links">
+    <a href="{{ route('companies.branches', $company) }}"><strong>{{ __('Sucursales') }}</strong><span>{{ $company->branches->count() }} {{ __('registradas') }}</span></a>
+    <a href="{{ route('companies.admins', $company) }}"><strong>{{ __('Administradores') }}</strong><span>{{ $company->users->count() }} {{ __('registrados') }}</span></a>
+    <a href="{{ route('companies.employees', $company) }}"><strong>{{ __('Empleados') }}</strong><span>{{ $employeeCount }} {{ __('registrados') }}</span></a>
+    <a href="{{ route('companies.activity', $company) }}"><strong>{{ __('Actividad') }}</strong><span>{{ __('Cambios recientes de esta empresa') }}</span></a>
+</div>
 </section>
 @endsection

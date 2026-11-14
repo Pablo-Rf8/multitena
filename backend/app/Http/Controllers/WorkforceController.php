@@ -19,11 +19,35 @@ class WorkforceController extends Controller
         return view('workforce.index', [
             'employees' => User::where('company_id', $id)->where('role', 'employee')->with('category')->latest()->paginate(20),
             'categories' => Category::where('company_id', $id)->orderBy('name')->get(),
-            'branches' => $request->user()->company->branches()->orderBy('name')->get(),
-            'devices' => Device::where('company_id', $id)->latest()->limit(50)->get(),
-            'sessions' => MobileSession::where('company_id', $id)->with(['user', 'device'])->latest()->limit(50)->get(),
-            'settings' => CompanySetting::firstOrCreate(['company_id' => $id]),
-            'notifications' => DB::table('access_notifications')->where('company_id', $id)->where('recipient_id', $request->user()->id)->whereNull('read_at')->latest()->limit(20)->get(),
+        ]);
+    }
+
+    public function categories(Request $request): View
+    {
+        return view('workforce.categories', [
+            'categories' => Category::where('company_id', $request->user()->company_id)->orderBy('name')->get(),
+        ]);
+    }
+
+    public function settingsPage(Request $request): View
+    {
+        return view('workforce.settings', [
+            'settings' => CompanySetting::firstOrCreate(['company_id' => $request->user()->company_id]),
+        ]);
+    }
+
+    public function devices(Request $request): View
+    {
+        return view('workforce.devices', [
+            'devices' => Device::where('company_id', $request->user()->company_id)->with('user')->latest()->paginate(20),
+        ]);
+    }
+
+    public function sessions(Request $request): View
+    {
+        return view('workforce.sessions', [
+            'sessions' => MobileSession::where('company_id', $request->user()->company_id)
+                ->with(['user', 'device'])->latest()->paginate(20),
         ]);
     }
 

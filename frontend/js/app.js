@@ -1,20 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.querySelector('[data-company-form]');
-    if (!form) return;
-
-    const name = form.querySelector('[data-company-name]');
-    const email = form.querySelector('[data-admin-email]');
-    let edited = email.value.trim() !== '';
-
-    email.addEventListener('input', () => { edited = email.value.trim() !== ''; });
-    name.addEventListener('input', () => {
-        if (edited) return;
-        const slug = name.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        email.value = slug ? `admin@${slug}.com` : '';
-    });
-});
-document.addEventListener('DOMContentLoaded', () => {
     const dialog = document.querySelector('#confirm-dialog');
     const accountDialog = document.querySelector('#account-dialog');
     const cancel = dialog?.querySelector('[data-confirm-cancel]');
@@ -82,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const open = document.querySelector('[data-sidebar-open]');
     const close = () => {
@@ -100,10 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const dialog = document.querySelector('#account-dialog');
-    const trigger = document.querySelector('[data-account-open]');
-    if (!dialog || !trigger || typeof dialog.showModal !== 'function') return;
+    const triggers = document.querySelectorAll('[data-account-open]');
+    if (!dialog || !triggers.length || typeof dialog.showModal !== 'function') return;
+    let activeTrigger = triggers[0];
 
     const menu = dialog.querySelector('[data-account-menu]');
     const passwordPanel = dialog.querySelector('[data-account-password-panel]');
@@ -119,12 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
         passwordPanel.querySelector('input[name="current_password"]')?.focus();
     };
 
-    trigger.addEventListener('click', () => {
+    triggers.forEach(trigger => trigger.addEventListener('click', () => {
+        activeTrigger = trigger;
         document.body.classList.remove('sidebar-open');
         document.querySelector('[data-sidebar-open]')?.setAttribute('aria-expanded', 'false');
         showMenu();
         dialog.showModal();
-    });
+    }));
     passwordButton?.addEventListener('click', showPassword);
     dialog.querySelector('[data-account-password-back]')?.addEventListener('click', () => {
         showMenu();
@@ -138,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         passwordForm?.reset();
         showMenu();
         const focusTarget = window.matchMedia('(max-width: 760px)').matches
-            ? document.querySelector('[data-sidebar-open]') : trigger;
+            ? document.querySelector('[data-sidebar-open]') : activeTrigger;
         focusTarget?.focus();
     });
     if (dialog.dataset.accountError === 'true') {
@@ -149,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const revealSection = () => {
         const section = document.getElementById(window.location.hash.slice(1));
@@ -157,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
     revealSection();
     window.addEventListener('hashchange', revealSection);
 });
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const pickers = document.querySelectorAll('[data-language-picker]');
@@ -172,102 +162,5 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         picker.open = false;
         picker.querySelector('summary')?.focus();
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('template-fields');
-    const add = document.getElementById('add-template-field');
-    if (container && add) {
-        add.addEventListener('click', () => {
-            const index = Number(container.dataset.nextIndex || 0);
-            container.dataset.nextIndex = String(index + 1);
-            const row = document.createElement('div');
-            row.className = 'credential-field-row';
-            row.dataset.fieldRow = '';
-            const nameLabel = document.createElement('label');
-            nameLabel.textContent = `${container.dataset.labelName} `;
-            const name = document.createElement('input');
-            name.name = `fields[${index}][name]`;
-            name.maxLength = 120;
-            name.required = true;
-            nameLabel.append(name);
-            const typeLabel = document.createElement('label');
-            typeLabel.textContent = `${container.dataset.labelType} `;
-            const type = document.createElement('select');
-            type.name = `fields[${index}][type]`;
-            [['text', container.dataset.labelText], ['password', container.dataset.labelPassword], ['url', container.dataset.labelUrl]].forEach(([value, label]) => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = label;
-                type.append(option);
-            });
-            typeLabel.append(type);
-            const requiredLabel = document.createElement('label');
-            requiredLabel.className = 'credential-check';
-            const required = document.createElement('input');
-            required.type = 'checkbox';
-            required.name = `fields[${index}][required]`;
-            required.value = '1';
-            requiredLabel.append(required, document.createTextNode(` ${container.dataset.labelRequired}`));
-            const actions = document.createElement('div');
-            actions.className = 'credential-row-actions';
-            [['↑', 'fieldUp'], ['↓', 'fieldDown'], [container.dataset.labelRemove, 'fieldRemove']].forEach(([label, key]) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'button button-ghost button-sm';
-                button.dataset[key] = '';
-                button.textContent = label;
-                if (key === 'fieldUp') button.setAttribute('aria-label', container.dataset.labelUp);
-                if (key === 'fieldDown') button.setAttribute('aria-label', container.dataset.labelDown);
-                actions.append(button);
-            });
-            row.append(nameLabel, typeLabel, requiredLabel, actions);
-            container.append(row);
-            name.focus();
-        });
-        container.addEventListener('click', event => {
-            const row = event.target.closest('[data-field-row]');
-            if (!row) return;
-            if (event.target.closest('[data-field-up]') && row.previousElementSibling) container.insertBefore(row, row.previousElementSibling);
-            if (event.target.closest('[data-field-down]') && row.nextElementSibling) container.insertBefore(row.nextElementSibling, row);
-            if (event.target.closest('[data-field-remove]') && container.querySelectorAll('[data-field-row]').length > 1) row.remove();
-        });
-    }
-    document.querySelectorAll('[data-reveal-url]').forEach(button => {
-        let timeout;
-        const area = button.closest('.credential-secret');
-        const output = area?.querySelector('[data-secret-output]');
-        const copy = area?.querySelector('[data-copy-secret]');
-        let secret = null;
-        const clear = () => {
-            secret = null;
-            if (output) output.textContent = '••••••••';
-            if (copy) copy.disabled = true;
-            button.textContent = button.dataset.labelShow;
-        };
-        button.addEventListener('click', async () => {
-            if (secret !== null) { clearTimeout(timeout); clear(); return; }
-            button.disabled = true;
-            try {
-                const response = await fetch(button.dataset.revealUrl, {
-                    method: 'POST', credentials: 'same-origin', cache: 'no-store',
-                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', 'Accept': 'application/json' },
-                });
-                if (!response.ok) throw new Error(button.dataset.errorReveal);
-                secret = (await response.json()).value;
-                output.textContent = secret;
-                if (copy) copy.disabled = false;
-                button.textContent = button.dataset.labelHide;
-                timeout = setTimeout(clear, 15000);
-            } catch (error) { window.alert(error.message); }
-            finally { button.disabled = false; }
-        });
-        copy?.addEventListener('click', async () => {
-            if (secret === null) return;
-            try { await navigator.clipboard.writeText(secret); copy.textContent = copy.dataset.labelCopied; setTimeout(() => { copy.textContent = copy.dataset.labelCopy; }, 2000); }
-            catch { window.alert(button.dataset.errorCopy); }
-        });
-        window.addEventListener('pagehide', clear);
     });
 });

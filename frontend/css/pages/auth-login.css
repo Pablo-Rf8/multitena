@@ -1,0 +1,7 @@
+.login-identity { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.login-identity h1 { margin: 0; }
+.login-logo { width: 64px; height: 64px; object-fit: contain; flex: none; border-radius: 16px; }
+.login-links { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; font-size: .9rem; }
+.login-panel { border-top: 3px solid var(--brand-primary); }
+.login-panel .form-stack { margin-top: 20px; }
+.login-panel .button-primary { min-width: 112px; }

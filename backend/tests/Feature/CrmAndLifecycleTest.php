@@ -130,7 +130,8 @@ class CrmAndLifecycleTest extends TestCase
 
         $this->actingAs($super)->get('/dashboard')->assertOk()->assertSee('Pepsi')
             ->assertSee('Nueva empresa')->assertSee('Registrar empleados');
-        $this->actingAs($super)->get('/companies/'.$company->id)->assertOk()->assertSee('Administradores de empresa');
+        $this->actingAs($super)->get('/companies/'.$company->id)->assertOk()->assertSee('Administradores');
+        $this->get(route('companies.admins', $company))->assertOk()->assertSee('Administradores de empresa');
         $this->actingAs($super)->get('/companies/'.$company->id.'/edit')->assertOk();
         $this->actingAs($super)->get('/companies/'.$company->id.'/admins/create')->assertOk();
         $this->actingAs($super)->get('/companies/'.$company->id.'/admins/'.$admin->id.'/edit')->assertOk();

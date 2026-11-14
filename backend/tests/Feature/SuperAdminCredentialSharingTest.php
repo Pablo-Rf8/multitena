@@ -48,9 +48,9 @@ class SuperAdminCredentialSharingTest extends TestCase
         $recipient = $this->superAdmin();
         $otherSuper = $this->superAdmin('other-platform@example.test');
 
-        $this->actingAs($realAdmin)->get(route('credentials.show', $realCredential))->assertOk()
+        $this->actingAs($realAdmin)->get(route('credentials.sharing', $realCredential))->assertOk()
             ->assertSee('Superadministradores de plataforma')->assertSee($recipient->email);
-        $this->actingAs($privateAdmin)->get(route('credentials.show', $privateCredential))->assertOk()
+        $this->actingAs($privateAdmin)->get(route('credentials.sharing', $privateCredential))->assertOk()
             ->assertDontSee('Superadministradores de plataforma');
         $this->post(route('credentials.shares.store', $privateCredential), [
             'user_id' => $recipient->id, 'max_accesses' => 2,
